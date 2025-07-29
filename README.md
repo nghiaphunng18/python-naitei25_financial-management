@@ -1,2 +1,3 @@
-# python-naitei25_appoiment-schedule
-Ứng dụng đặt lịch hẹn
+# python-naitei25_appartment_manager
+
+Ứng dụng quản lý phòng, tài chính và dịch vụ chung cư
