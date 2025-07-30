@@ -23,4 +23,5 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("appartment/", include("appartment.urls")),
     path("", RedirectView.as_view(url="appartment/")),
+    path("__reload__/", include("django_browser_reload.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

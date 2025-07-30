@@ -1,26 +1,62 @@
-{% load static %}
+{% load static %} 
 {% load i18n %}
+
 <header class="bg-gray-900 text-white shadow-lg sticky top-0 z-50">
-    <nav class="container mx-auto px-4 py-2 flex justify-between items-center">
-        <div class="font-bold">
-            <a href="/"><img class="w-40 h-14 overflow-hidden " src="{% static 'images/logo.svg' %}" alt="logo pic"></a>
-        </div>
+  <nav class="container mx-auto px-4 py-2 flex justify-between items-center">
+    <div class="font-bold">
+      <a href="/"
+        ><img
+          class="w-40 h-14 overflow-hidden"
+          src="{% static 'images/logo.svg' %}"
+          alt="logo pic"
+      /></a>
+    </div>
 
-        <ul class="hidden md:flex items-center space-x-8">
-            <li><a href="#" class="hover:text-blue-400 transition-colors duration-300">{% trans "Giới thiệu" %}</a></li>
-            <li><a href="#" class="hover:text-blue-400 transition-colors duration-300">{% trans "Các loại căn hộ" %}</a></li>
-            <li><a href="#" class="hover:text-blue-400 transition-colors duration-300">{% trans "Tiện ích" %}</a></li>
-            <li><a href="#" class="hover:text-blue-400 transition-colors duration-300">{% trans "Liên hệ" %}</a></li>
-        </ul>
+    <ul class="hidden md:flex items-center space-x-8">
+      <li>
+        <a href="#" class="hover:text-blue-400 transition-colors duration-300"
+          >{% trans "Giới thiệu" %}</a
+        >
+      </li>
+      <li>
+        <a href="#" class="hover:text-blue-400 transition-colors duration-300"
+          >{% trans "Các loại căn hộ" %}</a
+        >
+      </li>
+      <li>
+        <a href="#" class="hover:text-blue-400 transition-colors duration-300"
+          >{% trans "Tiện ích" %}</a
+        >
+      </li>
+      <li>
+        <a href="#" class="hover:text-blue-400 transition-colors duration-300"
+          >{% trans "Liên hệ" %}</a
+        >
+      </li>
+    </ul>
 
-        <a href="{% url 'login' %}?next={{ request.path }}" class="hidden md:block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-5 rounded-lg transition-colors duration-300">
-            {% trans "Bạn đã có tài khoản?" %}
-        </a>
-        
-        <button class="md:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-        </button>
-    </nav>
+    <a
+      href="{% url 'login' %}"
+      class="hidden md:block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-5 rounded-lg transition-colors duration-300"
+    >
+      {% trans "Bạn đã có tài khoản?" %}
+    </a>
+
+    <button class="md:hidden">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16m-7 6h7"
+        />
+      </svg>
+    </button>
+  </nav>
 </header>

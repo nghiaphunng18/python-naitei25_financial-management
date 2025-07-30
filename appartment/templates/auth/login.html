@@ -17,7 +17,6 @@
             <h1 class="text-2xl font-bold">{% trans "Đăng nhập" %}</h1>
             <p class="text-gray-200 text-sm">{% trans "Chào mừng trở lại!" %}</p>
         </header>
-
         <main class="p-6 space-y-6">
             {% if messages %}
                 {% for message in messages %}
@@ -26,10 +25,8 @@
                     </div>
                 {% endfor %}
             {% endif %}
-
             <form method="post" class="space-y-5">
                 {% csrf_token %}
-                
                 <div>
                     <label for="id_email" class="flex items-center text-gray-700 font-medium text-sm mb-1">
                         <i class="fas fa-envelope text-indigo-600 mr-2"></i> {% trans "Email" %}
@@ -39,7 +36,6 @@
                         <p class="text-red-600 text-xs mt-1">{{ form.email.errors.0 }}</p>
                     {% endif %}
                 </div>
-
                 <div>
                     <label for="id_password" class="flex items-center text-gray-700 font-medium text-sm mb-1">
                         <i class="fas fa-lock text-indigo-600 mr-2"></i> {% trans "Mật khẩu" %}
@@ -49,21 +45,17 @@
                         <p class="text-red-600 text-xs mt-1">{{ form.password.errors.0 }}</p>
                     {% endif %}
                 </div>
-
                 <div class="flex items-center">
                     {{ form.remember_me }}
                     <label for="id_remember_me" class="ml-2 text-sm text-gray-600">{% trans "Ghi nhớ đăng nhập" %}</label>
                 </div>
-
                 {% if form.non_field_errors %}
                     <div class="text-red-600 text-xs">{{ form.non_field_errors.0 }}</div>
                 {% endif %}
-
                 <button type="submit" class="w-full bg-gradient-to-br from-purple-700 to-indigo-600 text-white py-2.5 rounded-full font-medium text-base hover:from-purple-800 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center">
                     <i class="fas fa-sign-in-alt mr-2"></i> {% trans "Đăng nhập" %}
                 </button>
             </form>
-
             <footer class="text-center mt-4">
                 <p class="text-sm text-gray-500">
                     {% trans "Quên mật khẩu?" %}

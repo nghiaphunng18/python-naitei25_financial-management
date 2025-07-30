@@ -60,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
     "django.middleware.locale.LocaleMiddleware",
 ]
 
@@ -132,10 +133,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGES = [
-    ("vi", _("Vietnamese")),
-    ("en", _("English")),
+    ("en", "English"),
+    ("vi", "Vietnamese"),
 ]
 
 LANGUAGE_CODE = "vi"
@@ -146,6 +146,10 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Path to translated folder (locale/)
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -163,3 +167,4 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "appartment.User"
+LOGIN_URL = "login"

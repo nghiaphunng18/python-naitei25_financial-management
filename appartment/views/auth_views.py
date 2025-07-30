@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
 from ..forms.auth_forms import LoginForm
 
@@ -15,6 +16,8 @@ def login_view(request):
     # Nếu người dùng đã đăng nhập thì chuyển hướng về trang chính
     # if request.user.is_authenticated:
     #     return redirect("/")  # hoặc trang chính
+    if request.method == "GET" and "next" in request.GET:
+        messages.warning(request, _("Bạn cần đăng nhập để truy cập trang này."))
 
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -30,26 +33,22 @@ def login_view(request):
                     login(request, user)
                     messages.success(
                         request,
-                        _("Chào mừng %(name)s!")
-                        % {"name": user.get_full_name()},
+                        _("Chào mừng %(name)s!") % {"name": user.get_full_name()},
                     )
                     # Chuyển hướng đến trang ban đầu hoặc dashboard
                     next_url = request.GET.get("next", "dashboard")
                     return redirect(next_url)
                 else:
-                    messages.error(
-                        request, _("Tài khoản của bạn đã bị vô hiệu hóa.")
-                    )
+                    messages.error(request, _("Tài khoản của bạn đã bị vô hiệu hóa."))
             else:
-                messages.error(
-                    request, _("Email hoặc mật khẩu không chính xác.")
-                )
+                messages.error(request, _("Email hoặc mật khẩu không chính xác."))
     else:
         form = LoginForm()
 
     return render(request, "auth/login.html", {"form": form})
 
 
+@require_POST
 @login_required
 def logout_view(request):
     """
@@ -57,4 +56,4 @@ def logout_view(request):
     """
     logout(request)
     messages.success(request, _("Bạn đã đăng xuất thành công."))
-    return redirect("login")
+    return redirect("index")
