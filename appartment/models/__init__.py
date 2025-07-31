@@ -11,6 +11,8 @@ from .rooms import Room
 from .users import User
 from .wards import Ward
 from .payment_history import PaymentHistory
+from .eletric_water_services import ElectricWaterService
+from .eletric_water_totals import ElectricWaterTotal
 from ..constants import (
     StringLength,
     ServiceType,
@@ -18,5 +20,6 @@ from ..constants import (
     PaymentStatus,
     RoomStatus,
     NotificationStatus,
-    PaymentMethod
+    PaymentMethod,
+    ElectricWaterStatus,
 )
