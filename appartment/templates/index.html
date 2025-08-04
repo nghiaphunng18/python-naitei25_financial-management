@@ -1,44 +1,54 @@
-{% load static tailwind_tags %}
-{% load static i18n %}
+{% load static tailwind_tags %} {% load static i18n %}
 <!DOCTYPE html>
 <html lang="vi">
-<head>
+  <head>
     <title>{% trans "Appartment-Manager" %}</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% trans 'Trang khởi đầu khi lần đầu truy cập vào hệ thống' %}">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="{% trans 'Trang khởi đầu khi lần đầu truy cập vào hệ thống' %}"
+    />
     {% tailwind_css %}
-</head>
+  </head>
 
-<body class="bg-white text-gray-800 font-sans">
-
+  <body class="bg-white text-gray-800 font-sans">
     {% include 'partials/_indexheader.html' %}
+    {% include "base_message.html" %}
 
     <main>
-        <section 
-            class="relative h-screen bg-cover bg-center flex items-center justify-center text-white" 
-            style="background-image: url('{% static 'images/index_background1.avif' %}')">
-            
-            <div class="absolute inset-0 bg-black opacity-50"></div>
+      <section
+        class="relative h-screen bg-cover bg-center flex items-center justify-center text-white"
+        style="
+          background-image: url('{% static 'images/index_background1.avif' %}');
+        "
+      >
+        <div class="absolute inset-0 bg-black opacity-50"></div>
 
-            <div class="relative z-10 text-center px-4">
-                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4 text-shadow-lg">
-                    {% trans "Nâng tầm không gian sống của bạn" %}
-                </h1>
-                <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-gray-200 text-shadow-md">
-                    {% trans "Trải nghiệm cuộc sống đẳng cấp với chuỗi tiện ích vượt trội và cộng đồng văn minh." %}
-                </p>
-                <a href="#" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105 duration-300">
-                    {% trans "Khám phá ngay" %}
-                </a>
-            </div>
-        </section>
+        <div class="relative z-10 text-center px-4">
+          <h1
+            class="text-4xl md:text-6xl font-extrabold leading-tight mb-4 text-shadow-lg"
+          >
+            {% trans "Nâng tầm không gian sống của bạn" %}
+          </h1>
+          <p
+            class="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-gray-200 text-shadow-md"
+          >
+            {% trans "Trải nghiệm cuộc sống đẳng cấp với chuỗi tiện ích vượt trội và cộng đồng văn minh." %}
+          </p>
+          <a
+            href="#"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105 duration-300"
+          >
+            {% trans "Khám phá ngay" %}
+          </a>
+        </div>
+      </section>
 
-        {% include 'partials/_apartment_section.html' %}
-        {% include 'partials/_amenities_section.html' %}
+      {% include 'partials/_apartment_section.html' %}
+      {% include 'partials/_amenities_section.html' %}
     </main>
 
     {% include 'partials/_footer.html' %}
-
-</body>
+  </body>
 </html>

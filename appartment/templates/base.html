@@ -1,0 +1,24 @@
+{% load static tailwind_tags %} 
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{%trans "Appartment-Manager" %}</title>
+    {% tailwind_css %}
+  </head>
+  <body class="bg-white text-black">
+    {% include "base_message.html" %}
+    <div class="flex">
+      <div class="h-screen w-52">
+        {% block sidebar %}{%endblock %}
+      </div>
+      <div class="grow">
+        {% include "base_header.html"%} 
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </body>
+</html>
