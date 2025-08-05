@@ -1,0 +1,141 @@
+{% extends "base_manager.html"%} {% load i18n %} {% block content %} {% load static %}
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-door-open mr-3 text-blue-600"></i>
+                {{ page_title }}
+            </h1>
+            <p class="text-gray-600">{% trans "Thêm phòng mới vào hệ thống quản lý" %}</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% elif message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+                    <div class="flex items-center">
+                        {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle mr-2"></i>
+                        {% elif message.tags == 'error' %}
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle mr-2"></i>
+                        {% endif %}
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
+            <form method="post" id="createRoomForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Room ID Field -->
+                <div>
+                    <label for="{{ form.room_id.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.room_id.label }}
+                        <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.room_id }}
+                    <div id="room-id-feedback" class="mt-1 text-sm hidden"></div>
+                    {% if form.room_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.room_id.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Area Field -->
+                <div>
+                    <label for="{{ form.area.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.area.label }}
+                    </label>
+                    {{ form.area }}
+                    {% if form.area.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.area.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Status Field -->
+                <div>
+                    <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.status.label }}
+                        <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.status.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Max Occupants Field -->
+                <div>
+                    <label for="{{ form.max_occupants.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.max_occupants.label }}
+                        <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.max_occupants }}
+                    {% if form.max_occupants.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.max_occupants.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Description Field -->
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.description.label }}
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.description.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex items-center justify-between pt-4">
+                    <button type="button" onclick="resetForm()" class="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-200">
+                        <i class="fas fa-undo mr-2"></i>
+                        {% trans "Đặt lại" %}
+                    </button>
+                    
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        {% trans "Tạo phòng" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 text-center">
+            <a href="{% url 'room_list' %}" class="inline-flex items-center px-4 py-2 text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition duration-200">
+                <i class="fas fa-list mr-2"></i>
+                {% trans "Xem danh sách phòng" %}
+            </a>
+        </div>
+    </div>
+
+    <script src="{% static 'js/create_room.js' %}"></script>
+</body>
+{% endblock %}
