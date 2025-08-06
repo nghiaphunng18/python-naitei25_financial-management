@@ -1,9 +1,7 @@
 from django.urls import include
 from django.urls import path
 from appartment.views import auth_views, base_views, dashboard_views
-from appartment.views import auth_views, base_views
-from appartment.views import auth_views
-from appartment.views.manager import room_views
+from appartment.views.manager import room_views, room_history_views
 
 
 urlpatterns = [
@@ -15,4 +13,9 @@ urlpatterns = [
     path("room_list", room_views.room_list, name="room_list"),
     path("<str:room_id>/", room_views.room_detail, name="room_detail"),
     path("<str:room_id>/edit/", room_views.room_update, name="room_update"),
+    path(
+        "<str:room_id>/history/",
+        room_history_views.get_room_history,
+        name="room_history",
+    ),
 ]
