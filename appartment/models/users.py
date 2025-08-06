@@ -28,15 +28,11 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    user_id = models.CharField(
-        max_length=StringLength.SHORT.value, primary_key=True
-    )
+    user_id = models.CharField(max_length=StringLength.SHORT.value, primary_key=True)
     full_name = models.CharField(max_length=StringLength.EXTRA_LONG.value)
     email = models.EmailField(max_length=StringLength.LONG.value, unique=True)
     phone = models.CharField(max_length=StringLength.SHORT.value)
-    role = models.ForeignKey(
-        "Role", on_delete=models.RESTRICT, db_column="role_id"
-    )
+    role = models.ForeignKey("Role", on_delete=models.RESTRICT, db_column="role_id")
     province = models.ForeignKey(
         "Province",
         on_delete=models.RESTRICT,
