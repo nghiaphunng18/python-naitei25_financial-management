@@ -1,0 +1,113 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="m-4">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold pt-4 pl-2">{% trans "Lịch sử thay đổi phòng " %} {{ room.room_id }}</h1>
+      <p class="text-gray-600 p-2">{% trans "Chi tiết lịch sử thay đổi phòng từ ngày tạo phòng đến hiện tại" %}</p>
+    </div>
+    <div>
+      <a href="{% url 'room_detail' room.room_id %}" class="inline-flex items-center px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 448 512" 
+            class="w-5 h-5 mr-2"
+            fill="currentColor">
+          <path d="M257.5 445.1c12.5-12.5 12.5-32.8 0-45.3L147.3 288H424c17.7 0 32-14.3 32-32s-14.3-32-32-32H147.3L257.5 112.1c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0z"/>
+        </svg>
+        {% trans "Quay lại" %}
+    </a>
+    </div>
+  </div>
+  
+  <div class="flex gap-6 m-4 flex-col lg:flex-row">
+    
+    <!-- Changing room's prices -->
+    <div class="lg:w-1/3 p-4 shadow-xl rounded-lg">
+      <p class="text-center py-2 font-semibold">{% trans "Tổng quan thay đổi" %}</p>
+      <ul>
+        <li class="flex py-2">
+          <span class="w-1/2 text-center font-medium text-gray-500">{% trans "Ngày áp dụng" %}</span>
+          <span class="w-1/2 text-center font-medium text-gray-500">{% trans "Giá" %}</span>
+        </li>
+        {% for change in price_page_obj %}
+          <li class="flex justify-center pt-2">
+            <span class="w-1/2 italic font-medium text-center">{{ change.effective_date }}</span>
+            <span class="w-1/2 text-center">{{ change.price }} {% trans "VND" %}</span>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <!-- Pagination for price_page_obj -->
+      <div class="flex justify-center mt-4">
+        {% if price_page_obj.has_previous %}
+          <a href="?page1={{ price_page_obj.previous_page_number }}#top1" class="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300">{% trans "previous" %}</a>
+        {% endif %}
+
+        <span class="px-3 py-1 font-semibold">{{ price_page_obj.number }} / {{ price_page_obj.paginator.num_pages }}</span>
+
+        {% if price_page_obj.has_next %}
+          <a href="?page1={{ price_page_obj.next_page_number }}#top1" class="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300">{% trans "next" %}</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Details about room history every month -->
+    <div class="grow p-4 shadow-xl rounded-lg">
+      <p class="text-center py-2 font-semibold">{% trans "Chi tiết thay đổi theo tháng" %}</p>
+      <table class="table-auto w-full">
+        <thead>
+          <tr class="bg-gray-100 border-collapse rounded-t-2xl border-b border-gray-300 text-gray-500">
+            <th class="px-4 py-2 text-left rounded-tl-2xl">{% trans "Tháng" %}</th>
+            <th class="px-4 py-2 text-left">{% trans "Giá" %}</th>
+            <th class="px-4 py-2 text-left">{% trans "Trạng thái" %}</th>
+            <th class="px-4 py-2 text-left rounded-tr-2xl">{% trans "Danh sách cư dân" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in history_page_obj %}
+            <tr class="hover:bg-gray-50 border-collapse border-b border-gray-300">
+              <td class="px-4 py-2">{{ record.month }}</td>
+              <td class="px-4 py-2">{{ record.price }}</td>
+              <td class="px-4 py-2">
+                {% if record.number_of_residents == 0 %}
+                  <span class="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">{% trans "Available" %}</span>
+                {% else %}
+                  <span class="bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full">{% trans "Occupied" %}</span>
+                  <span class="text-red-800 font-semibold">| {{ record.number_of_residents }}</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-2">
+                {% if record.residents %}
+                  <ul>
+                    {% for user in record.residents %}
+                      <li>{{ user.full_name }}</li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <em>{% trans "Không có cư dân" %}</em>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Pagination for history_page_obj -->
+      <div class="flex justify-center mt-4">
+        {% if history_page_obj.has_previous %}
+          <a href="?page2={{ history_page_obj.previous_page_number }}#top2" class="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300">{% trans "previous" %}</a>
+        {% endif %}
+
+        <span class="px-3 py-1 font-semibold">{{ history_page_obj.number }} / {{ history_page_obj.paginator.num_pages }}</span>
+
+        {% if history_page_obj.has_next %}
+          <a href="?page2={{ history_page_obj.next_page_number }}#top2" class="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300">{% trans "next" %}</a>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
