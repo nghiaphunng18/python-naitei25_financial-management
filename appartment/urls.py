@@ -10,7 +10,6 @@ from appartment.views.manager.resident_views import (
 )
 from appartment.views.manager import room_views, room_history_views, bills_view
 from appartment.views.resident import bill_history_views, resident_room_views
-from appartment.views import auth_views, base_views, dashboard_views
 from appartment.views.notification_history import (
     admin_notification_history,
     manager_notification_history,
@@ -19,76 +18,95 @@ from appartment.views.notification_history import (
 )
 
 urlpatterns = [
+    # === CÁC URL TĨNH, CỤ THỂ NHẤT (ƯU TIÊN CAO NHẤT) ===
     path("", index, name="index"),
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
-    path("dashboard", dashboard, name="dashboard"),
+    path("dashboard/", dashboard, name="dashboard"),
+    # MANAGER URL
+    # MANAGER bill
+    path("manager/bills_list", bills_view.BillingView.as_view(), name="bills_list"),
     path(
-        "my-bill",
-        bill_history_views.resident_bill_history,
-        name="bill_history",
-    ),
-    path("create_room", room_views.create_room, name="create_room"),
-    path("room_list", room_views.room_list, name="room_list"),
-    # manager: manage resident
-    path("residents/", resident_list, name="resident_list"),
-    path("resident/assign/<str:user_id>/", assign_room, name="assign_room"),
-    path("resident/leave/<str:user_id>/", leave_room, name="leave_room"),
-    # notification for all role
-    path(
-        "resident/notifications/",
-        resident_notification_history,
-        name="resident_notification_history",
+        "manager/bill/create/",
+        bills_view.CreateFinalBillView.as_view(),
+        name="bill_create",
     ),
     path(
-        "manager/notifications/",
-        manager_notification_history,
-        name="manager_notification_history",
+        "manager/bill/generate-final-bill/",
+        bills_view.GenerateFinalBillView.as_view(),
+        name="generate_final_bill",
     ),
     path(
-        "admin/notifications/",
-        admin_notification_history,
-        name="admin_notification_history",
+        "manager/bill/add-adhoc-service/",
+        bills_view.AddAdhocServiceView.as_view(),
+        name="add_adhoc_service",
     ),
     path(
-        "notifications/mark-read/<int:notification_id>/",
-        mark_notification_read,
-        name="mark_notification_read",
+        "manager/bill/<str:bill_id>/", bills_view.BillDetailView.as_view(), name="bill"
     ),
-    # room
-    path("<str:room_id>/", room_views.room_detail, name="room_detail"),
-    path("<str:room_id>/edit/", room_views.room_update, name="room_update"),
+    # path("bill/<str:bill_id>/update/", bills_view.BillUpdateView.as_view(), name="bill_update"),
     path(
-        "<str:room_id>/history/",
-        room_history_views.get_room_history,
-        name="room_history",
-    ),
-    # bill
-    path("bills_list", bills_view.bills_list_view.as_view(), name="bills_list"),
-    path("bill/create/", bills_view.BillCreateView.as_view(), name="bill_create"),
-    path("bill/<str:bill_id>/", bills_view.BillDetailView.as_view(), name="bill"),
-    path(
-        "bill/<str:bill_id>/update/",
-        bills_view.BillUpdateView.as_view(),
-        name="bill_update",
-    ),
-    path(
-        "bill/<str:bill_id>/delete/",
+        "manager/bill/<str:bill_id>/delete/",
         bills_view.BillDeleteView.as_view(),
         name="bill_delete",
     ),
     path(
-        "bill/<str:bill_id>/confirm_payment/",
+        "manager/bill/<str:bill_id>/confirm_payment/",
         bills_view.confirm_payment_view,
         name="bill_confirm_payment",
     ),
     path(
-        "bill/<str:bill_id>/print/",
+        "manager/bill/<str:bill_id>/print/",
         bills_view.BillPrintView.as_view(),
         name="bill_print",
     ),
     path(
-        "resident_room_list", resident_room_views.room_list, name="resident_room_list"
+        "manager/bill/draft-bill/<int:pk>/",
+        bills_view.DraftBillDetailView.as_view(),
+        name="draft_bill_detail",
+    ),
+    path(
+        "manager/bill/draft-bill/<int:pk>/update-status/",
+        bills_view.update_draft_bill_status_view,
+        name="update_draft_bill_status",
+    ),
+    path(
+        "manager/bill/room/<str:room_id>/save-reading/",
+        bills_view.SaveMeterReadingView.as_view(),
+        name="save_meter_reading",
+    ),
+    # MANAGER room
+    path("manager/room_list", room_views.room_list, name="room_list"),
+    path("manager/<str:room_id>/", room_views.room_detail, name="room_detail"),
+    path("manager/create_room", room_views.create_room, name="create_room"),
+    path("manager/<str:room_id>/edit/", room_views.room_update, name="room_update"),
+    path(
+        "manager/<str:room_id>/history/",
+        room_history_views.get_room_history,
+        name="room_history",
+    ),
+    # MANAGER manage resident
+    path("manager/resident_list", resident_list, name="resident_list"),
+    path("manager/assign/<str:user_id>/", assign_room, name="assign_room"),
+    path("manager/leave/<str:user_id>/", leave_room, name="leave_room"),
+    # MANAGER notification
+    path(
+        "manager/notification",
+        manager_notification_history,
+        name="manager_notification_history",
+    ),
+    # RESIDENT URL
+    # RESIDENT bill
+    path(
+        "resident/my-bill",
+        bill_history_views.resident_bill_history,
+        name="bill_history",
+    ),
+    # RESIDENT room
+    path(
+        "resident/resident_room_list",
+        resident_room_views.room_list,
+        name="resident_room_list",
     ),
     path(
         "resident/<str:room_id>",
@@ -100,18 +118,38 @@ urlpatterns = [
         resident_room_views.room_history,
         name="resident_room_history",
     ),
+    path(
+        "resident/notification/",
+        resident_notification_history,
+        name="resident_notification_history",
+    ),
+    # notification for all role
+    path(
+        "admin/notification/",
+        admin_notification_history,
+        name="admin_notification_history",
+    ),
+    path(
+        "notification/mark-read/<int:notification_id>/",
+        mark_notification_read,
+        name="mark_notification_read",
+    ),
     # ADMIN URL
+    path("admin/user_list", admin_user_view.user_list, name="user_list"),
     path("admin/user/create/", admin_user_view.create_user, name="create_user"),
     path(
         "admin/user/update/<str:user_id>",
         admin_user_view.update_user,
         name="update_user",
     ),
-    path("user_list", admin_user_view.user_list, name="user_list"),
     path(
-        "user/toggle-active/<str:user_id>/",
+        "admin/user/toggle-active/<str:user_id>/",
         admin_user_view.toggle_active,
         name="toggle_active",
     ),
-    path("user/<str:user_id>/delete/", admin_user_view.delete_user, name="delete_user"),
+    path(
+        "admin/user/<str:user_id>/delete/",
+        admin_user_view.delete_user,
+        name="delete_user",
+    ),
 ]

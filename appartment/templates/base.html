@@ -27,7 +27,9 @@
         <script defer src="{% static 'js/alpinejs_cdn.min.js' %}"></script>
         {% include "base_header.html"%} 
         {% block content %}{% endblock %}
-        {% block javascript %}{% endblock %}
+        {% block javascript %}
+        <script src="{% static 'js/manager/custom_calendar.js' %}"></script>
+        {% endblock %}
       </div>
     </div>
   </body>

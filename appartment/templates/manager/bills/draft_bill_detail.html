@@ -1,0 +1,57 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+{% load custom_bill_status %}
+
+{% block content %}
+<main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{% trans "Chi tiết HĐ Nháp" %} #{{ draft_bill.pk }}</h1>
+                <div class="text-gray-500 dark:text-gray-400 mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <span>{% trans "Phòng:" %} <span class="font-semibold">{{ draft_bill.room.description }}</span></span>
+                    <span class="hidden sm:inline">|</span>
+                    <span>{% trans "Tháng:" %} <span class="font-semibold">{{ draft_bill.bill_month|date:"m/Y" }}</span></span>
+                    <span class="hidden sm:inline">|</span>
+                    <span>{% trans "Loại:" %} <span class="font-semibold">{{ draft_bill.get_draft_type_display }}</span></span>
+                </div>
+            </div>
+            <div class="mt-4 sm:mt-0">
+                {% display_draft_bill_status draft_bill %}
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="text-xl font-semibold mt-6 mb-4">{% trans "Chi tiết tính toán:" %}</h3>
+                <pre class="bg-gray-50 dark:bg-gray-900 p-4 rounded-md text-sm font-mono whitespace-pre-wrap border dark:border-gray-700">{{ draft_bill.details|pprint }}</pre> {# Giả sử bạn đã có filter pprint #}
+            </div>
+            
+            <div class="mt-6">
+                <div class="border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 md:pl-8 h-full">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 pt-6 md:pt-0">{% trans "Cập nhật Trạng thái (Quản lý)" %}</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% trans "Dùng để giả lập hành động của cư dân cho mục đích kiểm thử." %}</p>
+                    <form action="{% url 'update_draft_bill_status' draft_bill.pk %}" method="post" class="mt-4 flex items-end space-x-4">
+                        {% csrf_token %}
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Trạng thái mới" %}</label>
+                            <select name="status" id="status" class="border rounded p-2 mt-1 dark:bg-gray-900 dark:border-gray-600">
+                                {% for value, label in status_choices %}
+                                    {# 'label' đã được dịch từ TextChoices trong model #}
+                                    <option value="{{ value }}" {% if draft_bill.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">{% trans "Lưu thay đổi" %}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+            <a href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'billing_main' %}{% endif %}" class="text-blue-600 hover:underline">
+                &larr; {% trans "Quay lại Dashboard" %}
+            </a>
+        </div>
+    </div>
+</main>
+{% endblock %}

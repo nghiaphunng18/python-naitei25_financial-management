@@ -49,18 +49,16 @@
                                 </button>
                         
                                 <button
-                                    onclick="openAssignModal('{{ resident.user_id|escapejs }}', '{{ assign_room_url|escapejs }}')"
+                                    onclick="openAssignModal('{{ resident.user_id|escapejs }}', '{% url 'assign_room' resident.user_id %}')"
                                     class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors whitespace-nowrap">
                                     {% trans "Gán phòng" %}
                                 </button>
 
-                        
                                 <button
-                                    onclick="openLeaveModal('{{ resident.user_id|escapejs }}', '{{ leave_room_url|escapejs }}')"
+                                    onclick="openLeaveModal('{{ resident.user_id|escapejs }}', '{% url 'leave_room' resident.user_id %}')"
                                     class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors whitespace-nowrap">
                                     {% trans "Rời phòng" %}
                                 </button>
-
                             </div>
                         </td>                        
                     </tr>
@@ -143,12 +141,7 @@
             <form id="leave-room-form" method="post" action="">
                 {% csrf_token %}
                 <input type="hidden" name="user_id" id="leave-user-id">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-gray-700">{% trans "Ngày rời" %}</label>
-                        <input type="date" name="move_out_date" class="w-full p-2 border rounded" required>
-                    </div>
-                </div>
+                <p class="text-gray-700 mb-4">{% trans "Bạn có chắc muốn cho cư dân này rời phòng?" %}</p>
                 <div class="flex justify-end mt-6 space-x-3">
                     <button type="button" onclick="closeLeaveModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">{% trans "Hủy" %}</button>
                     <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">{% trans "Rời phòng" %}</button>

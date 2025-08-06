@@ -10,6 +10,8 @@ class PaymentHistory(models.Model):
         on_delete=models.RESTRICT,
         db_column="bill_id",
         related_name="payment_history",
+        null=True,
+        blank=True,
     )
     payment_date = models.DateTimeField()
     amount_paid = models.DecimalField(**DecimalConfig.MONEY)

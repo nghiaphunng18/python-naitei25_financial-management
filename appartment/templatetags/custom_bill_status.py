@@ -1,5 +1,6 @@
 from django import template
 from ..constants import PaymentStatus
+from ..models import DraftBill
 
 register = template.Library()
 
@@ -51,4 +52,39 @@ def display_bill_status(bill, style="default"):
     return {
         "status_text": status_text,
         "css_class": css_class,
+    }
+
+
+@register.inclusion_tag("manager/bills/partials/draft_bill_status_tag.html")
+def display_draft_bill_status(draft_bill):
+    """
+    Template tag để hiển thị trạng thái của hóa đơn nháp dưới dạng badge.
+    """
+    status_map = {
+        DraftBill.DraftStatus.DRAFT: {
+            "text": "Nháp",
+            "css_class": "bg-gray-100 text-gray-800",
+        },
+        DraftBill.DraftStatus.SENT: {
+            "text": "Đã gửi",
+            "css_class": "bg-blue-100 text-blue-800",
+        },
+        DraftBill.DraftStatus.CONFIRMED: {
+            "text": "Đã xác nhận",
+            "css_class": "bg-green-100 text-green-800",
+        },
+        DraftBill.DraftStatus.REJECTED: {
+            "text": "Bị từ chối",
+            "css_class": "bg-red-100 text-red-800",
+        },
+    }
+
+    status_info = status_map.get(
+        draft_bill.status,
+        {"text": draft_bill.status, "css_class": "bg-gray-100 text-gray-800"},
+    )
+
+    return {
+        "status_text": status_info["text"],
+        "css_class": status_info["css_class"],
     }
