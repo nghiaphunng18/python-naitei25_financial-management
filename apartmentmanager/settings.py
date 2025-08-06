@@ -69,7 +69,7 @@ ROOT_URLCONF = "apartmentmanager.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -91,7 +91,9 @@ WSGI_APPLICATION = "apartmentmanager.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("DB_DATABASE"),  # Tên database đã tạo trong MySQL
+        "NAME": os.environ.get(
+            "DB_DATABASE"
+        ),  # Tên database đã tạo trong MySQL
         "USER": os.environ.get("DB_USERNAME"),  # Ví dụ: 'root'
         "PASSWORD": os.environ.get("DB_PASSWORD"),
         "HOST": os.environ.get(

@@ -1,0 +1,237 @@
+<!-- templates/rooms/room_update.html -->
+{% extends "base_manager.html"%} {% load i18n %} {% block content %} {% load static %}
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-edit mr-3 text-blue-600"></i>
+                    {{ page_title }}
+                </h1>
+                <p class="text-gray-600">{% trans "Cập nhật thông tin phòng trong hệ thống" %}</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'room_detail' room.room_id %}" class="inline-flex items-center px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200">
+                    <i class="fas fa-eye mr-2"></i>
+                    {% trans "Xem chi tiết" %}
+                </a>
+                <a href="{% url 'room_list' %}" class="inline-flex items-center px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200">
+                    <i class="fas fa-list mr-2"></i>
+                    {% trans "Danh sách phòng" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% elif message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+                    <div class="flex items-center">
+                        {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle mr-2"></i>
+                        {% elif message.tags == 'error' %}
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle mr-2"></i>
+                        {% endif %}
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Current Room Info -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-lg p-6 sticky top-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                        {% trans "Thông tin hiện tại" %}
+                    </h2>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% trans "Tên phòng:" %}</span>
+                            <span class="font-medium">{{ room.room_id }}</span>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% trans "Trạng thái hiện tại:" %}</span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if room.status == 'available' %}bg-green-100 text-green-800
+                                {% elif room.status == 'occupied' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ room.get_status_display }}
+                            </span>
+                        </div>
+
+                        {% if room.area %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% trans "Diện tích:" %}</span>
+                            <span class="font-medium">{{ room.area }} m²</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% trans "Số người tối đa:" %}</span>
+                            <span class="font-medium">{{ room.max_occupants }} người</span>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% trans "Đang ở hiện tại:" %}</span>
+                            <span class="font-medium text-blue-600">{{ current_occupants }} người</span>
+                        </div>
+                    </div>
+
+                    {% if current_occupants > 0 %}
+                    <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            <span class="text-sm text-yellow-800">
+                                {% blocktrans %}Lưu ý: Hiện có {{ current_occupants }} người đang ở. Số người tối đa phải >= {{ current_occupants }}.{% endblocktrans %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if room.description %}
+                    <div class="mt-4">
+                        <h3 class="text-sm font-medium text-gray-900 mb-2">{% trans "Mô tả hiện tại:" %}</h3>
+                        <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">{{ room.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Update Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                        <i class="fas fa-edit mr-2 text-green-600"></i>
+                        {% trans "Cập nhật thông tin" %}
+                    </h2>
+
+                    <form method="post" id="updateRoomForm" class="space-y-6">
+                        {% csrf_token %}
+
+                        <!-- Area Field -->
+                        <div>
+                            <label for="{{ form.area.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.area.label }}
+                            </label>
+                            {{ form.area }}
+                            {% if form.area.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {% for error in form.area.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Status Field -->
+                        <div>
+                            <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.status.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.status }}
+                            {% if current_occupants > 0 and room.status != 'maintenance' %}
+                                <p class="mt-1 text-sm text-gray-600">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                     {% trans "Nếu chuyển sang \"Bảo trì\" trong khi có người ở, hãy đảm bảo đã thông báo trước." %}
+                                </p>
+                            {% endif %}
+                            {% if form.status.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {% for error in form.status.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Max Occupants Field -->
+                        <div>
+                            <label for="{{ form.max_occupants.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.max_occupants.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.max_occupants }}
+                            {% if form.max_occupants.help_text %}
+                                <p class="mt-1 text-sm text-blue-600">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    {{ form.max_occupants.help_text }}
+                                </p>
+                            {% endif %}
+                            {% if form.max_occupants.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {% for error in form.max_occupants.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Description Field -->
+                        <div>
+                            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {% for error in form.description.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                            <button id="resetButton" type="button" class="px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-200">
+                                <i class="fas fa-undo mr-2"></i>
+                                {% trans "Đặt lại" %}
+                            </button>
+
+                            <div class="flex space-x-3">
+                                <a href="{% url 'room_detail' room.room_id %}" class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-200">
+                                    <i class="fas fa-times mr-2"></i>
+                                    {% trans "Hủy" %}
+                                </a>
+
+                                <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 flex items-center">
+                                    <i class="fas fa-save mr-2"></i>
+                                    {% trans "Cập nhật phòng" %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Change History Preview -->
+                <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 class="text-sm font-medium text-blue-900 mb-2">
+                        <i class="fas fa-history mr-2"></i>
+                        {% trans "Xem trước thay đổi" %}
+                    </h3>
+                    <div id="changePreview" class="text-sm text-blue-800">
+                        <p>{% trans "Thay đổi sẽ được hiển thị ở đây khi bạn chỉnh sửa form." %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="room-context"
+        data-area="{{ room.area|default:'' }}"
+        data-status="{{ room.status }}"
+        data-max-occupants="{{ room.max_occupants }}"
+        data-description="{{ room.description|default:'' }}">
+    </div>
+
+    <!-- Nhúng file JS -->
+<script src="{% static 'js/update_room.js' %}"></script>
+</body>
+{% endblock %}

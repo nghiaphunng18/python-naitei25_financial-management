@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 17:15+0700\n"
+"POT-Creation-Date: 2025-08-04 18:03+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,114 +18,115 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: apartmentmanager/settings.py:142
-msgid "Vietnamese"
-msgstr "Tiếng Việt"
-
-#: apartmentmanager/settings.py:143
-msgid "English"
-msgstr ""
-
-#: appartment/forms/auth_forms.py:17
+#: .\appartment\forms\auth_forms.py:17
 msgid "Nhập email của bạn"
 msgstr ""
 
-#: appartment/forms/auth_forms.py:22 appartment/templates/auth/login.html:32
+#: .\appartment\forms\auth_forms.py:22
+#: .\appartment\templates\auth\login.html:32
 msgid "Email"
 msgstr ""
 
-#: appartment/forms/auth_forms.py:29
+#: .\appartment\forms\auth_forms.py:29
 msgid "Nhập mật khẩu"
 msgstr ""
 
-#: appartment/forms/auth_forms.py:33 appartment/templates/auth/login.html:41
+#: .\appartment\forms\auth_forms.py:33
+#: .\appartment\templates\auth\login.html:41
 msgid "Mật khẩu"
 msgstr ""
 
-#: appartment/forms/auth_forms.py:39 appartment/templates/auth/login.html:50
+#: .\appartment\forms\auth_forms.py:39
+#: .\appartment\templates\auth\login.html:50
 msgid "Ghi nhớ đăng nhập"
 msgstr ""
 
-#: appartment/forms/auth_forms.py:54 appartment/views/auth_views.py:42
+#: .\appartment\forms\auth_forms.py:54 .\appartment\views\auth_views.py:48
 msgid "Email hoặc mật khẩu không chính xác."
 msgstr ""
 
-#: appartment/forms/auth_forms.py:58
+#: .\appartment\forms\auth_forms.py:58
 msgid "Tài khoản này đã bị vô hiệu hóa."
 msgstr ""
 
-#: appartment/templates/auth/login.html:10
+#: .\appartment\templates\auth\login.html:10
 msgid "Đăng nhập vào hệ thống"
 msgstr ""
 
-#: appartment/templates/auth/login.html:11
+#: .\appartment\templates\auth\login.html:11
 msgid "Đăng nhập - Hệ thống"
 msgstr ""
 
-#: appartment/templates/auth/login.html:17
-#: appartment/templates/auth/login.html:56
+#: .\appartment\templates\auth\login.html:17
+#: .\appartment\templates\auth\login.html:56
 msgid "Đăng nhập"
 msgstr ""
 
-#: appartment/templates/auth/login.html:18
+#: .\appartment\templates\auth\login.html:18
 msgid "Chào mừng trở lại!"
 msgstr ""
 
-#: appartment/templates/auth/login.html:61
+#: .\appartment\templates\auth\login.html:61
 msgid "Quên mật khẩu?"
 msgstr ""
 
-#: appartment/templates/auth/login.html:62
+#: .\appartment\templates\auth\login.html:62
 msgid "Khôi phục tại đây"
 msgstr ""
 
-#: appartment/templates/base.html:8 appartment/templates/index.html:5
+#: .\appartment\templates\base.html:9 .\appartment\templates\index.html:5
 msgid "Appartment-Manager"
 msgstr "Quản lý căn hộ"
 
-#: appartment/templates/base_header.html:42
+#: .\appartment\templates\base_header.html:42
 msgid "Tài khoản"
 msgstr ""
 
-#: appartment/templates/base_header.html:63
+#: .\appartment\templates\base_header.html:63
 msgid "Đăng xuất"
 msgstr ""
 
-#: appartment/templates/base_manager.html:19
-#: appartment/templates/base_resident.html:20
+#: .\appartment\templates\base_manager.html:19
+#: .\appartment\templates\base_resident.html:20
 msgid "Thông tin tòa nhà"
 msgstr ""
 
-#: appartment/templates/base_manager.html:34
+#: .\appartment\templates\base_manager.html:34
 msgid "Quản lý hóa đơn"
 msgstr ""
 
-#: appartment/templates/base_manager.html:49
+#: .\appartment\templates\base_manager.html:49
 msgid "Quản lý căn hộ"
 msgstr ""
 
-#: appartment/templates/base_manager.html:64
+#: .\appartment\templates\base_manager.html:64
 msgid "Danh sách cư dân"
 msgstr ""
 
-#: appartment/templates/base_manager.html:79
-#: appartment/templates/base_resident.html:50
+#: .\appartment\templates\base_manager.html:79
+#: .\appartment\templates\base_resident.html:50
 msgid "Quản lý yêu cầu"
 msgstr ""
 
-#: appartment/templates/base_resident.html:35
+#: .\appartment\templates\base_message.html:11
+#: .\appartment\templates\base_message.html:21
+#: .\appartment\templates\base_message.html:31
+msgid "Đóng"
+msgstr ""
+
+#: .\appartment\templates\base_resident.html:35
 msgid "Hóa đơn"
 msgstr ""
 
-#: appartment/templates/index.html:10
+#: .\appartment\templates\index.html:10
 msgid "Trang khởi đầu khi lần đầu truy cập vào hệ thống"
 msgstr ""
 
-#: appartment/templates/index.html:31
+#: .\appartment\templates\index.html:32
 msgid "Nâng tầm không gian sống của bạn"
 msgstr "Elevate your living space"
 
-#: appartment/templates/index.html:36
+#: .\appartment\templates\index.html:37
 msgid ""
 "Trải nghiệm cuộc sống đẳng cấp với chuỗi tiện ích vượt trội và cộng đồng văn "
 "minh."
@@ -133,117 +134,283 @@ msgstr ""
 "Experience a classy life with a series of outstanding amenities and a "
 "civilized community."
 
-#: appartment/templates/index.html:42
+#: .\appartment\templates\index.html:43
 msgid "Khám phá ngay"
 msgstr "Explore Now"
 
-#: appartment/templates/partials/_amenities_section.html:7
-msgid "Khám Phá Các Tiện Ích Của Chúng Tôi"
+#: .\appartment\templates\manager\rooms\create_room.html:15
+msgid "Add a new room to the management system"
 msgstr ""
 
-#: appartment/templates/partials/_amenities_section.html:10
+#: .\appartment\templates\manager\rooms\create_room.html:92
+msgid "Reset"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\create_room.html:97
+msgid "Create Room"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\create_room.html:107
+msgid "View Room List"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\create_room.html:122
+msgid "Creating..."
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:12
+msgid "Room"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:14
+msgid "Room details and resident list"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:19
+#: .\appartment\templates\manager\rooms\room_list.html:78
+msgid "Edit"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:23
+msgid "Back"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:52
+msgid "Room Information"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:58
+msgid "Status"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:70
+msgid "Area"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:77
+msgid "Maximum Occupants"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:78
+#: .\appartment\templates\manager\rooms\room_detail.html:84
+#: .\appartment\templates\manager\rooms\room_list.html:45
+msgid "people"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:83
+msgid "Current Occupants"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:89
+#: .\appartment\templates\manager\rooms\room_detail.html:221
+msgid "Available Spots"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:91
+msgid "spots"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:97
+#: .\appartment\templates\manager\rooms\room_detail.html:111
+#: .\appartment\templates\manager\rooms\room_detail.html:229
+#: .\appartment\templates\manager\rooms\room_list.html:53
+msgid "Occupancy Rate"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:103
+msgid "Created Date"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:123
+msgid "Description"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:135
+#: .\appartment\templates\manager\rooms\room_detail.html:217
+msgid "Current Residents"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:155
+msgid "Move-in Date"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:158
+msgid "Currently Residing"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:167
+msgid "No residents currently in this room"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:176
+msgid "Resident History"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:197
+msgid "Moved Out"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:206
+msgid "No resident history available"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_detail.html:225
+msgid "Total Residents"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:12
+msgid "Manage all rooms in the system"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:16
+#: .\appartment\templates\manager\rooms\room_list.html:112
+msgid "Create New Room"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:74
+msgid "Details"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:87
+msgid "Empty"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:92
+msgid "Full"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:97
+msgid "Has Space"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:108
+msgid "No rooms available"
+msgstr ""
+
+#: .\appartment\templates\manager\rooms\room_list.html:109
+msgid "Create your first room"
+msgstr ""
+
+#: .\appartment\templates\partials\_amenities_section.html:7
+#, fuzzy
+#| msgid "Khám Phá Không Gian Sống Của Chúng Tôi"
+msgid "Khám Phá Các Tiện Ích Của Chúng Tôi"
+msgstr "Explore Our Living Spaces"
+
+#: .\appartment\templates\partials\_amenities_section.html:10
 msgid ""
 "Mỗi căn hộ đều được cung cấp các dịch vụ và có thể yêu cầu thêm nếu cần "
 "thiết."
 msgstr ""
 
-#: appartment/templates/partials/_amenities_section.html:19
+#: .\appartment\templates\partials\_amenities_section.html:19
 msgid "Bể bơi"
 msgstr ""
 
-#: appartment/templates/partials/_amenities_section.html:25
+#: .\appartment\templates\partials\_amenities_section.html:25
 msgid "Phòng Gym"
 msgstr ""
 
-#: appartment/templates/partials/_amenities_section.html:31
+#: .\appartment\templates\partials\_amenities_section.html:31
 msgid "Công viên"
 msgstr ""
 
-#: appartment/templates/partials/_amenities_section.html:37
+#: .\appartment\templates\partials\_amenities_section.html:37
 msgid "Massage & Spa"
 msgstr ""
 
-#: appartment/templates/partials/_amenities_section.html:43
+#: .\appartment\templates\partials\_amenities_section.html:43
 msgid "Giặt ủi"
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:7
+#: .\appartment\templates\partials\_apartment_section.html:7
 msgid "Khám Phá Không Gian Sống Của Chúng Tôi"
 msgstr "Explore Our Living Spaces"
 
-#: appartment/templates/partials/_apartment_section.html:10
+#: .\appartment\templates\partials\_apartment_section.html:10
 msgid ""
 "Mỗi căn hộ đều được thiết kế để mang lại sự thoải mái và tiện nghi tối đa."
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:18
+#: .\appartment\templates\partials\_apartment_section.html:18
 msgid "Căn hộ Studio hiện đại"
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:19
+#: .\appartment\templates\partials\_apartment_section.html:19
 msgid ""
 "Lý tưởng cho người độc thân hoặc các cặp đôi, tối ưu hóa không gian và đầy "
 "đủ tiện nghi."
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:20
-#: appartment/templates/partials/_apartment_section.html:28
-#: appartment/templates/partials/_apartment_section.html:36
+#: .\appartment\templates\partials\_apartment_section.html:20
+#: .\appartment\templates\partials\_apartment_section.html:28
+#: .\appartment\templates\partials\_apartment_section.html:36
 msgid "Xem chi tiết"
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:26
+#: .\appartment\templates\partials\_apartment_section.html:26
 msgid "Căn hộ 2 phòng ngủ"
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:27
+#: .\appartment\templates\partials\_apartment_section.html:27
 msgid ""
 "Không gian rộng rãi với 2 phòng ngủ riêng biệt, phù hợp cho các gia đình nhỏ."
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:34
+#: .\appartment\templates\partials\_apartment_section.html:34
 msgid "Căn hộ Penthouse"
 msgstr ""
 
-#: appartment/templates/partials/_apartment_section.html:35
+#: .\appartment\templates\partials\_apartment_section.html:35
 msgid ""
 "Sang trọng và đẳng cấp với tầm nhìn toàn cảnh thành phố và không gian sống "
 "đỉnh cao."
 msgstr ""
 
-#: appartment/templates/partials/_footer.html:10
+#: .\appartment\templates\partials\_footer.html:10
 msgid "© 2025 APMR. Đã đăng ký bản quyền."
 msgstr ""
 
-#: appartment/templates/partials/_indexheader.html:16
+#: .\appartment\templates\partials\_indexheader.html:18
 msgid "Giới thiệu"
 msgstr "Introduce"
 
-#: appartment/templates/partials/_indexheader.html:21
+#: .\appartment\templates\partials\_indexheader.html:23
 msgid "Các loại căn hộ"
 msgstr "Types of apartments"
 
-#: appartment/templates/partials/_indexheader.html:26
+#: .\appartment\templates\partials\_indexheader.html:28
 msgid "Tiện ích"
 msgstr "utilities"
 
-#: appartment/templates/partials/_indexheader.html:31
+#: .\appartment\templates\partials\_indexheader.html:33
 msgid "Liên hệ"
 msgstr "Contact"
 
-#: appartment/templates/partials/_indexheader.html:40
+#: .\appartment\templates\partials\_indexheader.html:42
 msgid "Bạn đã có tài khoản?"
 msgstr "Already have an account?"
 
-#: appartment/views/auth_views.py:34
+#: .\appartment\views\auth_views.py:20
+msgid "Bạn cần đăng nhập để truy cập trang này."
+msgstr ""
+
+#: .\appartment\views\auth_views.py:36
 #, python-format
 msgid "Chào mừng %(name)s!"
 msgstr ""
 
-#: appartment/views/auth_views.py:40
+#: .\appartment\views\auth_views.py:44
 msgid "Tài khoản của bạn đã bị vô hiệu hóa."
 msgstr ""
 
-#: appartment/views/auth_views.py:56
+#: .\appartment\views\auth_views.py:63
 msgid "Bạn đã đăng xuất thành công."
 msgstr ""
+
+#: .\appartment\views\dashboard_views.py:23
+msgid "Bạn không có quyền truy cập trang dashboard này."
+msgstr ""
+
+#~ msgid "Vietnamese"
+#~ msgstr "Tiếng Việt"

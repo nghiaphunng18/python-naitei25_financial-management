@@ -79,3 +79,7 @@ class ElectricWaterStatus(Enum):
     @classmethod
     def choices(cls):
         return [(key.value, key.name.replace("_", " ").title()) for key in cls]
+
+
+MIN_OCCUPANTS = 1
+MAX_OCCUPANTS = 50
