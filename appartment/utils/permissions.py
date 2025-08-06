@@ -2,6 +2,10 @@
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
+from django.views import generic
+from django.contrib.auth.mixins import AccessMixin
+from django.core.exceptions import PermissionDenied
+from datetime import datetime
 
 
 def staff_required(view_func):
@@ -34,3 +38,22 @@ def role_required(*allowed_roles):
         return _wrapped_view
 
     return decorator
+
+
+class StaffRequiredMixin(AccessMixin):
+    """
+    Mixin này kiểm tra xem người dùng hiện tại có phải là nhân viên (is_staff=True) hay không.
+    Nếu không, sẽ trả về lỗi 403 Forbidden.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        # Kiểm tra xem người dùng đã đăng nhập chưa
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        # Kiểm tra xem người dùng có phải là nhân viên không (dựa trên is_staff)
+        if not request.user.is_staff:
+            raise PermissionDenied("Bạn không có quyền truy cập trang này.")
+
+        # Nếu tất cả kiểm tra đều qua, tiếp tục xử lý request
+        return super().dispatch(request, *args, **kwargs)

@@ -33,20 +33,15 @@ def login_view(request):
                     login(request, user)
                     messages.success(
                         request,
-                        _("Chào mừng %(name)s!")
-                        % {"name": user.get_full_name()},
+                        _("Chào mừng %(name)s!") % {"name": user.get_full_name()},
                     )
                     # Chuyển hướng đến trang ban đầu hoặc dashboard
                     next_url = request.GET.get("next", "dashboard")
                     return redirect(next_url)
                 else:
-                    messages.error(
-                        request, _("Tài khoản của bạn đã bị vô hiệu hóa.")
-                    )
+                    messages.error(request, _("Tài khoản của bạn đã bị vô hiệu hóa."))
             else:
-                messages.error(
-                    request, _("Email hoặc mật khẩu không chính xác.")
-                )
+                messages.error(request, _("Email hoặc mật khẩu không chính xác."))
     else:
         form = LoginForm()
 

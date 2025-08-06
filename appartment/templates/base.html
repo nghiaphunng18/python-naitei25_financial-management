@@ -1,5 +1,6 @@
 {% load static tailwind_tags %} 
 {% load i18n %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,6 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{%trans "Appartment-Manager" %}</title>
     {% tailwind_css %}
+    <link rel="stylesheet" href="{% static 'css/dist/flatpickr.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dist/flatpickr_style.css' %}">
   </head>
   <body class="bg-white text-black">
     {% include "base_message.html" %}
@@ -16,8 +19,12 @@
         {% block sidebar %}{%endblock %}
       </div>
       <div class="grow">
+        <script src="{% static 'js/flatpick.js' %}"></script>
+        <script src="{% static 'js/flatpickr_index.js' %}"></script>
+        <script defer src="{% static 'js/alpinejs_cdn.min.js' %}"></script>
         {% include "base_header.html"%} 
         {% block content %}{% endblock %}
+        {% block javascript %}{% endblock %}
       </div>
     </div>
   </body>

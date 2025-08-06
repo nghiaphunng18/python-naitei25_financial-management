@@ -7,8 +7,8 @@ from appartment.views.manager.resident_views import (
     assign_room,
     leave_room,
 )
-from appartment.views.manager import room_views, room_history_views
-
+from appartment.views.manager import room_views, room_history_views, bills_view
+from appartment.views import auth_views, base_views, dashboard_views
 
 urlpatterns = [
     path("", index, name="index"),
@@ -26,5 +26,28 @@ urlpatterns = [
         "<str:room_id>/history/",
         room_history_views.get_room_history,
         name="room_history",
+    ),
+    path("bills_list", bills_view.bills_list_view.as_view(), name="bills_list"),
+    path("bill/create/", bills_view.BillCreateView.as_view(), name="bill_create"),
+    path("bill/<str:bill_id>/", bills_view.BillDetailView.as_view(), name="bill"),
+    path(
+        "bill/<str:bill_id>/update/",
+        bills_view.BillUpdateView.as_view(),
+        name="bill_update",
+    ),
+    path(
+        "bill/<str:bill_id>/delete/",
+        bills_view.BillDeleteView.as_view(),
+        name="bill_delete",
+    ),
+    path(
+        "bill/<str:bill_id>/confirm_payment/",
+        bills_view.confirm_payment_view,
+        name="bill_confirm_payment",
+    ),
+    path(
+        "bill/<str:bill_id>/print/",
+        bills_view.BillPrintView.as_view(),
+        name="bill_print",
     ),
 ]
