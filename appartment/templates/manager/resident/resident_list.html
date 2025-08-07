@@ -1,0 +1,160 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">{% trans "Danh sách cư dân" %}</h1>
+    {% if messages %}
+        <div class="mb-6 max-w-full mx-auto">
+            {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} rounded-lg shadow-md">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="max-w-full mx-auto">
+        <div class="overflow-x-auto shadow-md rounded-lg">
+            <table class="min-w-full bg-white border border-gray-200">
+                <thead class="bg-gray-100">
+                    <tr class="text-gray-600 uppercase text-sm">
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "ID" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Tên" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Email" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Số điện thoại" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Địa chỉ" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Phòng hiện tại" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Hành động" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resident in residents %}
+                    <tr class="border-b border-b-3 hover:bg-gray-50 transition-colors">
+                        <td class="py-4 px-6 text-center">{{ resident.user_id }}</td>
+                        <td class="py-4 px-6 text-center">{{ resident.full_name }}</td>
+                        <td class="py-4 px-6 text-center">{{ resident.email }}</td>
+                        <td class="py-4 px-6 text-center">{{ resident.phone }}</td>
+                        <td class="py-4 px-6 text-center">{{ resident.address }}</td>
+                        <td class="py-4 px-6 text-center">{{ resident.room_id }}</td>
+                        <td class="py-4 px-6 text-center">
+                            <div class="flex items-center justify-center gap-2 whitespace-nowrap">
+                                <button
+                                    onclick="toggleDropdown('{{ resident.user_id }}')"
+                                    data-state="closed"
+                                    id="detail-btn-{{ resident.user_id }}"
+                                    data-open-text="{{ _('Thu gọn') }}"
+                                    data-close-text="{{ _('Chi tiết') }}"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap">
+                                    {% trans "Chi tiết" %}
+                                </button>
+                        
+                                <button
+                                    onclick="openAssignModal('{{ resident.user_id }}', '{% url 'assign_room' resident.user_id %}')"
+                                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors whitespace-nowrap">
+                                    {% trans "Gán phòng" %}
+                                </button>
+                        
+                                <button
+                                    onclick="openLeaveModal('{{ resident.user_id }}', '{% url 'leave_room' resident.user_id %}')"
+                                    class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors whitespace-nowrap">
+                                    {% trans "Rời phòng" %}
+                                </button>
+                            </div>
+                        </td>                        
+                    </tr>
+
+                        <tr id="dropdown-{{ resident.user_id }}" class="hidden opacity-0 -translate-y-4 transition-all duration-300">
+                            <td colspan="7" class="p-6 bg-gray-100">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-3">{% trans "Lịch sử phòng" %}</h3>
+                                {% if resident.history %}
+                                    <div class="shadow-sm rounded-lg overflow-hidden">
+                                        <table class="min-w-full border border-gray-200">
+                                            <thead class="bg-gray-200">
+                                                <tr class="text-sm text-gray-600">
+                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Phòng" %}</th>
+                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Ngày vào" %}</th>
+                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Ngày ra" %}</th>
+                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Trạng thái" %}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for record in resident.history %}
+                                                    <tr class="border-b border-b-2 hover:bg-gray-50">
+                                                        <td class="py-3 px-4 text-center">{{ record.room.room_id }}</td>
+                                                        <td class="py-3 px-4 text-center">{{ record.move_in_date|date:"d/m/Y" }}</td>
+                                                        <td class="py-3 px-4 text-center">
+                                                            {% if record.move_out_date %}
+                                                                {{ record.move_out_date|date:"d/m/Y" }}
+                                                            {% else %}
+                                                                {% trans "Đang ở" %}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="py-3 px-4 text-center">
+                                                            {% if record.move_out_date %}
+                                                                {% trans "Đã rời" %}
+                                                            {% else %}
+                                                                {% trans "Đang ở" %}
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-gray-600">{% trans "Chưa có lịch sử phòng." %}</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="py-4 px-6 text-center text-gray-600">{% trans "Chưa có cư dân nào." %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal cho gán phòng -->
+    <div id="assign-room-modal" class="fixed inset-0 bg-gray-600 bg-opacity-10 backdrop-blur-sm flex items-center justify-center hidden transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md transform scale-95 opacity-0 transition-all duration-300" id="assign-modal-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">{% trans "Gán phòng cho cư dân" %}</h2>
+            <form id="assign-room-form" method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="assign-user-id">
+                <div class="space-y-4">
+                    {{ form.as_p }}
+                </div>
+                <div class="flex justify-end mt-6 space-x-3">
+                    <button type="button" onclick="closeAssignModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">{% trans "Hủy" %}</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">{% trans "Gán phòng" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal cho rời phòng -->
+    <div id="leave-room-modal" class="fixed inset-0 bg-gray-600 bg-opacity-10 backdrop-blur-sm flex items-center justify-center hidden transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md transform scale-95 opacity-0 transition-all duration-300" id="leave-modal-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">{% trans "Xác nhận rời phòng" %}</h2>
+            <form id="leave-room-form" method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="leave-user-id">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700">{% trans "Ngày rời" %}</label>
+                        <input type="date" name="move_out_date" class="w-full p-2 border rounded" required>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-6 space-x-3">
+                    <button type="button" onclick="closeLeaveModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">{% trans "Hủy" %}</button>
+                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">{% trans "Rời phòng" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/manager/resident/resident_list.js' %}"></script>
+{% endblock %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-06 11:22+0700\n"
+"POT-Creation-Date: 2025-08-07 11:11+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,12 +17,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 #: appartment/forms/auth_forms.py:17
 msgid "Nhập email của bạn"
 msgstr ""
 
 #: appartment/forms/auth_forms.py:22 appartment/templates/auth/login.html:32
+#: appartment/templates/manager/resident/resident_list.html:23
 msgid "Email"
 msgstr ""
 
@@ -44,6 +44,45 @@ msgstr ""
 
 #: appartment/forms/auth_forms.py:58
 msgid "Tài khoản này đã bị vô hiệu hóa."
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:15
+#: appartment/templates/manager/resident/resident_list.html:74
+msgid "Phòng"
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:21
+#: appartment/templates/manager/resident/resident_list.html:75
+msgid "Ngày vào"
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:28
+#: appartment/templates/manager/resident/resident_list.html:146
+msgid "Ngày rời"
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:43
+msgid "Ngày vào không được là ngày trong quá khứ."
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:60
+msgid "Ngày vào phải sau ngày rời phòng trước đó."
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:66
+msgid "Vui lòng chọn cả phòng và ngày vào."
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:72
+msgid "Phòng đã đầy, không thể gán thêm cư dân."
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:77
+msgid "Vui lòng chọn ngày rời."
+msgstr ""
+
+#: appartment/forms/manage/resident_room_form.py:79
+msgid "Vui lòng cung cấp thông tin hợp lệ."
 msgstr ""
 
 #: appartment/forms/manager/room_forms.py:19
@@ -73,6 +112,7 @@ msgstr ""
 
 #: appartment/forms/manager/room_forms.py:56
 #: appartment/forms/manager/room_forms.py:133
+#: appartment/templates/manager/resident/resident_list.html:77
 #: appartment/templates/manager/room_history.html:64
 msgid "Trạng thái"
 msgstr ""
@@ -173,8 +213,7 @@ msgid "Quản lý căn hộ"
 msgstr ""
 
 #: appartment/templates/base_manager.html:64
-#: appartment/templates/manager/room_history.html:65
-msgid "Danh sách cư dân"
+msgid "Quản lý cư dân"
 msgstr ""
 
 #: appartment/templates/base_manager.html:79
@@ -208,6 +247,96 @@ msgstr ""
 
 #: appartment/templates/index.html:43
 msgid "Khám phá ngay"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:6
+#: appartment/templates/manager/room_history.html:65
+msgid "Danh sách cư dân"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:21
+msgid "ID"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:22
+msgid "Tên"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:24
+msgid "Số điện thoại"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:25
+msgid "Địa chỉ"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:26
+msgid "Phòng hiện tại"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:27
+msgid "Hành động"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:45
+msgid "Thu gọn"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:46
+#: appartment/templates/manager/resident/resident_list.html:48
+#: appartment/templates/manager/rooms/room_list.html:75
+msgid "Chi tiết"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:54
+#: appartment/templates/manager/resident/resident_list.html:131
+msgid "Gán phòng"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:60
+#: appartment/templates/manager/resident/resident_list.html:152
+msgid "Rời phòng"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:68
+#: appartment/templates/manager/rooms/room_detail.html:47
+msgid "Lịch sử phòng"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:76
+msgid "Ngày ra"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:89
+#: appartment/templates/manager/resident/resident_list.html:96
+#: appartment/templates/manager/rooms/room_detail.html:182
+msgid "Đang ở"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:94
+msgid "Đã rời"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:105
+msgid "Chưa có lịch sử phòng."
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:111
+msgid "Chưa có cư dân nào."
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:122
+msgid "Gán phòng cho cư dân"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:130
+#: appartment/templates/manager/resident/resident_list.html:151
+#: appartment/templates/manager/rooms/update_room.html:202
+msgid "Hủy"
+msgstr ""
+
+#: appartment/templates/manager/resident/resident_list.html:140
+msgid "Xác nhận rời phòng"
 msgstr ""
 
 #: appartment/templates/manager/room_history.html:8
@@ -300,10 +429,6 @@ msgstr ""
 msgid "Chỉnh sửa"
 msgstr ""
 
-#: appartment/templates/manager/rooms/room_detail.html:47
-msgid "Lịch sử phòng"
-msgstr ""
-
 #: appartment/templates/manager/rooms/room_detail.html:76
 msgid "Thông tin phòng"
 msgstr ""
@@ -368,10 +493,6 @@ msgstr ""
 msgid "Vào ở:"
 msgstr ""
 
-#: appartment/templates/manager/rooms/room_detail.html:182
-msgid "Đang ở"
-msgstr ""
-
 #: appartment/templates/manager/rooms/room_detail.html:191
 msgid "Hiện tại chưa có ai ở trong phòng này"
 msgstr ""
@@ -408,10 +529,6 @@ msgstr ""
 #: appartment/templates/manager/rooms/room_list.html:113
 #: appartment/views/manager/room_views.py:52
 msgid "Tạo phòng mới"
-msgstr ""
-
-#: appartment/templates/manager/rooms/room_list.html:75
-msgid "Chi tiết"
 msgstr ""
 
 #: appartment/templates/manager/rooms/room_list.html:79
@@ -483,10 +600,6 @@ msgstr ""
 
 #: appartment/templates/manager/rooms/update_room.html:143
 msgid "Nếu chuyển sang \\"
-msgstr ""
-
-#: appartment/templates/manager/rooms/update_room.html:202
-msgid "Hủy"
 msgstr ""
 
 #: appartment/templates/manager/rooms/update_room.html:207
@@ -593,8 +706,12 @@ msgstr ""
 msgid "Bạn đã có tài khoản?"
 msgstr ""
 
-#: appartment/utils/permissions.py:11
+#: appartment/utils/permissions.py:10 appartment/utils/permissions.py:29
 msgid "Bạn không có quyền truy cập chức năng này."
+msgstr ""
+
+#: appartment/utils/permissions.py:23
+msgid "Bạn cần đăng nhập để truy cập chức năng này."
 msgstr ""
 
 #: appartment/views/auth_views.py:20
@@ -616,6 +733,61 @@ msgstr ""
 
 #: appartment/views/dashboard_views.py:23
 msgid "Bạn không có quyền truy cập trang dashboard này."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:38
+#: appartment/views/manager/resident_views.py:46
+msgid "Chưa có phòng"
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:92
+#, python-format
+msgid "Cư dân đã ở phòng %(room_id)s. Vui lòng chọn phòng khác."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:105
+msgid "Phòng không khả dụng hoặc đã đầy."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:140
+msgid "Gán phòng mới"
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:141
+#, python-format
+msgid "Bạn đã được gán vào phòng %(room_id)s từ ngày %(date)s."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:158
+msgid "Thành viên mới trong phòng"
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:160
+#, python-format
+msgid "Cư dân %(name)s đã được chuyển đến phòng %(room_id)s từ ngày %(date)s."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:171
+#, python-format
+msgid "Gán phòng thành công cho cư dân %(name)s."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:175
+msgid "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:193
+msgid "Cư dân này hiện không ở trong phòng nào."
+msgstr ""
+
+#: appartment/views/manager/resident_views.py:236
+#, python-brace-format
+msgid "Đã chuyển cư dân {resident.full_name} ra khỏi phòng thành công."
+msgstr ""
+
+#: appartment/views/manager/room_history_views.py:31
+#, python-brace-format
+msgid "Phòng có ID {room_id} không tồn tại."
 msgstr ""
 
 #: appartment/views/manager/room_views.py:28
