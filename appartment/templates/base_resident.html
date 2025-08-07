@@ -4,28 +4,30 @@
 
 {% block sidebar %}
 <div class="bg-gray-800 h-full w-52">
-  <a href="#" class="p-2 flex justify-center items-center text-white">Logo</a>
+  <a href="{% url 'dashboard' %}" class="p-2 flex justify-center items-center text-white">Logo</a>
   <ul class="flex justify-center items-center flex-col py-2 w-full text-white">
-    <li class="p-2 w-full hover:bg-gray-500">
-      <a class="flex items-center gap-2 pl-2" href="#">
+    <li class="w-full {% if request.resolver_match.url_name == 'dashboard' %}bg-gray-500{% endif %} hover:bg-gray-500">
+      <a class="flex items-center gap-2 px-4 py-2" href="dashboard">
         <i class="fa-solid fa-house w-5 h-5 text-white"></i>
         <span>{% trans "Thông tin tòa nhà" %}</span>
       </a>
     </li>
-    <li class="p-2 w-full hover:bg-gray-500">
-      <a class="flex items-center gap-2 pl-2" href="{% url 'bill_history' %}">
+    <li class="w-full {% if request.resolver_match.url_name == 'bill_history' %}bg-gray-500{% endif %} hover:bg-gray-500">         
+      <a class="flex items-center gap-2 px-4 py-2" href="{% url 'bill_history' %}">
         <i class="fa-solid fa-money-bills"></i>
         <span>{% trans "Hóa đơn" %}</span>
       </a>
     </li>
-    <li class="p-2 w-full hover:bg-gray-500">
-      <a class="flex items-center gap-2 pl-2"  href="{% url 'resident_room_list' %}">
+    {% with request.resolver_match.url_name as current_url %}
+    <li class="w-full {% if current_url in 'resident_room_list resident_room_detail resident_room_history' %}bg-gray-500{% endif %} hover:bg-gray-500">
+    {% endwith %} 
+      <a class="flex items-center gap-2 px-4 py-2"  href="{% url 'resident_room_list' %}">
         <i class="fa-solid fa-building"></i>
         <span>{% trans "Quản lý phòng ở" %}</span>
       </a>
     </li>
-    <li class="p-2 w-full hover:bg-gray-500">
-      <a class="flex items-center gap-2 pl-2" href="#">
+    <li class="w-full {% if request.resolver_match.url_name == '#' %}bg-gray-500{% endif %} hover:bg-gray-500">
+      <a class="flex items-center gap-2 px-4 py-2" href="#">
         <i class="fa-solid fa-question"></i>
         <span>{% trans "Quản lý yêu cầu" %}</span>
       </a>

@@ -1,0 +1,44 @@
+<form method="post" class="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto mt-4">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="flex items-center mb-4 w-full">
+            <!-- Label bên trái -->
+            <label for="{{ field.id_for_label }}" class="w-1/4 font-medium pr-4">
+                {{ field.label }}
+                {% if field.field.required %}
+                    <span class="text-red-500">*</span>
+                {% endif %}
+            </label>
+
+            <!-- Input bên phải -->
+            <div class="grow w-3/4">
+                {{ field }}
+                {% if field.errors %}
+                    <div class="text-red-500 text-sm">
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="mt-6 flex justify-end gap-4">
+        {% if cancel_url and cancel_text %}
+            <a href="{{ cancel_url }}"
+            class="px-4 py-2 {{ cancel_color|default:'bg-gray-400' }} text-white rounded hover:opacity-90 flex items-center gap-2">
+                {% if cancel_icon %}
+                    <i class="{{ cancel_icon }}"></i>
+                {% endif %}
+                {{ cancel_text }}
+            </a>
+        {% endif %}
+        <button type="submit" class="px-4 py-2 {{ button_color }} text-white rounded hover:opacity-90 flex items-center gap-2">
+            {% if button_icon %}
+                <i class="{{ button_icon }}"></i>
+            {% endif %}
+            {{ button_text }}
+        </button>
+    </div>
+</form>

@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Subquery, OuterRef
 from django.utils import timezone
+
+from appartment.constants import UserRole
+from appartment.utils.permissions import role_required
 from ...models import (
     Bill,
     RoomResident,
@@ -11,7 +14,7 @@ from ...models import (
 )
 
 
-@login_required
+@role_required(UserRole.RESIDENT.value)
 def resident_bill_history(request):
     """
     View hiển thị lịch sử hóa đơn của cư dân

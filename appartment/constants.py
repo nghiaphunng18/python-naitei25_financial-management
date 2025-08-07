@@ -113,4 +113,8 @@ class PaginateNumber(Enum):
 DAY_MONTH_YEAR_FORMAT = "%d/%m/%Y"
 MONTH_YEAR_FORMAT = "%m/%Y"
 
+STATUS_CHOICES = [
+    ("True", "Active"),
+    ("False", "Inactive"),
+]
 DEFAULT_PAGE_SIZE = 10
