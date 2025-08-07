@@ -8,7 +8,12 @@ from appartment.views.manager.resident_views import (
     assign_room,
     leave_room,
 )
-from appartment.views.manager import room_views, room_history_views, bills_view
+from appartment.views.manager import (
+    room_views,
+    room_history_views,
+    bills_view,
+    rental_prices_views,
+)
 from appartment.views.resident import bill_history_views, resident_room_views
 from appartment.views.notification_history import (
     admin_notification_history,
@@ -85,6 +90,21 @@ urlpatterns = [
         room_history_views.get_room_history,
         name="room_history",
     ),
+    path(
+        "manager/rental_prices/create/<str:room_id>/",
+        rental_prices_views.rental_price_create,
+        name="rental_price_create",
+    ),
+    path(
+        "manager/rental_prices/update/<int:rental_price_id>/",
+        rental_prices_views.rental_price_update,
+        name="rental_price_update",
+    ),
+    path(
+        "manager/rental_prices/delete/<int:rental_price_id>/",
+        rental_prices_views.rental_price_delete,
+        name="rental_price_delete",
+    ),
     # MANAGER manage resident
     path("manager/resident_list", resident_list, name="resident_list"),
     path("manager/assign/<str:user_id>/", assign_room, name="assign_room"),
@@ -123,17 +143,6 @@ urlpatterns = [
         resident_notification_history,
         name="resident_notification_history",
     ),
-    # notification for all role
-    path(
-        "admin/notification/",
-        admin_notification_history,
-        name="admin_notification_history",
-    ),
-    path(
-        "notification/mark-read/<int:notification_id>/",
-        mark_notification_read,
-        name="mark_notification_read",
-    ),
     # ADMIN URL
     path("admin/user_list", admin_user_view.user_list, name="user_list"),
     path("admin/user/create/", admin_user_view.create_user, name="create_user"),
@@ -151,5 +160,16 @@ urlpatterns = [
         "admin/user/<str:user_id>/delete/",
         admin_user_view.delete_user,
         name="delete_user",
+    ),
+    path(
+        "admin/notification/",
+        admin_notification_history,
+        name="admin_notification_history",
+    ),
+    # notification for all role
+    path(
+        "notification/mark-read/<int:notification_id>/",
+        mark_notification_read,
+        name="mark_notification_read",
     ),
 ]

@@ -210,5 +210,16 @@ def toggle_active(request, user_id):
     if request.method == "POST":
         user.is_active = not user.is_active
         user.save()
-
+        if user.is_active:
+            messages.success(
+                request,
+                _("Kích hoạt tài khoản %(full_name)s thành công.")
+                % {"full_name": user.full_name},
+            )
+        else:
+            messages.success(
+                request,
+                _("Vô hiệu hóa tài khoản %(full_name)s thành công.")
+                % {"full_name": user.full_name},
+            )
     return redirect("user_list")

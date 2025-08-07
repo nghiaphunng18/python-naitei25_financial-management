@@ -1,5 +1,7 @@
 from django.db import models
 
+from django.utils import timezone
+
 from ..constants import DecimalConfig
 
 
@@ -12,7 +14,7 @@ class RentalPrice(models.Model):
         related_name="rental_prices",
     )
     price = models.DecimalField(**DecimalConfig.MONEY)
-    effective_date = models.DateTimeField(auto_now_add=True)
+    effective_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = "rental_prices"

@@ -118,3 +118,5 @@ STATUS_CHOICES = [
     ("False", "Inactive"),
 ]
 DEFAULT_PAGE_SIZE = 10
+
+MIN_RENTAL_PRICE = 0
