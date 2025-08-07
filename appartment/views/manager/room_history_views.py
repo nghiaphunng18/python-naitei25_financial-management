@@ -6,16 +6,23 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from appartment.models.rental_prices import RentalPrice
 from appartment.utils.permissions import role_required
 from ...models import Room, RoomResident, User
-from ...constants import PRICE_CHANGES_PER_PAGE_MAX, HISTORY_PER_PAGE_MAX
+from ...constants import (
+    PRICE_CHANGES_PER_PAGE_MAX,
+    HISTORY_PER_PAGE_MAX,
+    UserRole,
+    DAY_MONTH_YEAR_FORMAT,
+    MONTH_YEAR_FORMAT,
+)
 
 
 @login_required
-@role_required("ROLE_APARTMENT_MANAGER")
+@role_required(UserRole.APARTMENT_MANAGER.value)
 def get_room_history(request, room_id):
     """
     View để xem lịch sử thay đổi phòng cho quản lý
@@ -71,7 +78,7 @@ def get_room_history(request, room_id):
 
         history.append(
             {
-                "month": month_start.strftime("%m-%Y"),
+                "month": month_start.strftime(MONTH_YEAR_FORMAT),
                 "number_of_residents": len(users_in_month),
                 "residents": users_in_month,
                 "price": price_in_month,
@@ -80,7 +87,10 @@ def get_room_history(request, room_id):
 
     # Paginate general_change_price
     price_changes = [
-        {"price": p.price, "effective_date": p.effective_date.strftime("%d-%m-%Y")}
+        {
+            "price": p.price,
+            "effective_date": p.effective_date.strftime(DAY_MONTH_YEAR_FORMAT),
+        }
         for p in prices
     ]
     price_paginator = Paginator(price_changes, PRICE_CHANGES_PER_PAGE_MAX)
@@ -93,10 +103,13 @@ def get_room_history(request, room_id):
     history_page_obj = history_paginator.get_page(history_page_number)
 
     context = {
+        "room_id": room_id,
+        "base_template": "base_manager.html",
+        "back_url": "room_detail",
         "room": room,
         "price_page_obj": price_page_obj,
         "history_page_obj": history_page_obj,
     }
 
-    template_name = "manager/room_history.html"
+    template_name = "room_history.html"
     return render(request, template_name, context)

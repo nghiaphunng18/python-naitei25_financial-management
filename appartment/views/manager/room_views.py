@@ -4,14 +4,16 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.utils.translation import gettext_lazy as _
+
+from appartment.constants import UserRole
 from ...forms.manager.room_forms import CreateRoomForm, UpdateRoomForm
 from ...models import Room, RoomResident
-from ...utils.permissions import staff_required
+from ...utils.permissions import role_required, staff_required
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
-@staff_required
+@role_required(UserRole.APARTMENT_MANAGER.value)
 def create_room(request):
     """
     View để tạo phòng mới - chỉ dành cho manager (is_staff=True)
@@ -35,14 +37,11 @@ def create_room(request):
             except Exception as e:
                 messages.error(
                     request,
-                    _("Có lỗi xảy ra khi tạo phòng: %(error)s")
-                    % {"error": str(e)},
+                    _("Có lỗi xảy ra khi tạo phòng: %(error)s") % {"error": str(e)},
                 )
         else:
             # Form có lỗi validation
-            messages.error(
-                request, _("Vui lòng kiểm tra lại thông tin đã nhập.")
-            )
+            messages.error(request, _("Vui lòng kiểm tra lại thông tin đã nhập."))
     else:
         # GET request - hiển thị form trống
         form = CreateRoomForm()
@@ -56,7 +55,7 @@ def create_room(request):
 
 
 @login_required
-@staff_required
+@role_required(UserRole.APARTMENT_MANAGER.value)
 def room_detail(request, room_id):
     """
     View hiển thị chi tiết phòng - chỉ dành cho manager
@@ -95,8 +94,7 @@ def room_detail(request, room_id):
         "total_residents_ever": total_residents_ever,
         "occupancy_rate": round(occupancy_rate, 1),
         "available_spots": room.max_occupants - current_occupants_count,
-        "page_title": _("Chi tiết phòng %(room_id)s")
-        % {"room_id": room.room_id},
+        "page_title": _("Chi tiết phòng %(room_id)s") % {"room_id": room.room_id},
     }
 
     return render(request, "manager/rooms/room_detail.html", context)
@@ -104,7 +102,7 @@ def room_detail(request, room_id):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-@staff_required
+@role_required(UserRole.APARTMENT_MANAGER.value)
 def room_update(request, room_id):
     """
     View cập nhật thông tin phòng - chỉ dành cho manager
@@ -128,9 +126,7 @@ def room_update(request, room_id):
                 updated_room = form.save()
                 messages.success(
                     request,
-                    _(
-                        'Thông tin phòng "%(room_id)s" đã được cập nhật thành công!'
-                    )
+                    _('Thông tin phòng "%(room_id)s" đã được cập nhật thành công!')
                     % {"room_id": updated_room.room_id},
                 )
 
@@ -145,28 +141,23 @@ def room_update(request, room_id):
                 )
         else:
             # Form có lỗi validation
-            messages.error(
-                request, _("Vui lòng kiểm tra lại thông tin đã nhập.")
-            )
+            messages.error(request, _("Vui lòng kiểm tra lại thông tin đã nhập."))
     else:
         # GET request - hiển thị form với dữ liệu hiện tại
-        form = UpdateRoomForm(
-            instance=room, current_occupants=current_occupants
-        )
+        form = UpdateRoomForm(instance=room, current_occupants=current_occupants)
 
     context = {
         "form": form,
         "room": room,
         "current_occupants": current_occupants,
-        "page_title": _("Chỉnh sửa phòng %(room_id)s")
-        % {"room_id": room.room_id},
+        "page_title": _("Chỉnh sửa phòng %(room_id)s") % {"room_id": room.room_id},
     }
 
     return render(request, "manager/rooms/update_room.html", context)
 
 
 @login_required
-@staff_required
+@role_required(UserRole.APARTMENT_MANAGER.value)
 def room_list(request):
     """
     View để hiển thị danh sách phòng với thông tin số người ở

@@ -108,3 +108,7 @@ class PaginateNumber(Enum):
     @classmethod
     def choices(cls):
         return [(key.value, key.name.replace("_", " ").title()) for key in cls]
+
+
+DAY_MONTH_YEAR_FORMAT = "%d/%m/%Y"
+MONTH_YEAR_FORMAT = "%m/%Y"
