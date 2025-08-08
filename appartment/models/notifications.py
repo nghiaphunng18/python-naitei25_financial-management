@@ -27,6 +27,12 @@ class Notification(models.Model):
 
     class Meta:
         db_table = "notifications"
+        indexes = [
+            models.Index(fields=["sender"]),
+            models.Index(fields=["receiver"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self):
         return self.title

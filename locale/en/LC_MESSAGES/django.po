@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-07 11:11+0700\n"
+"POT-Creation-Date: 2025-08-08 16:16+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: appartment/forms/auth_forms.py:17
 msgid "Nhập email của bạn"
 msgstr ""
@@ -112,8 +113,11 @@ msgstr ""
 
 #: appartment/forms/manager/room_forms.py:56
 #: appartment/forms/manager/room_forms.py:133
+#: appartment/templates/admin/notifications/history_notifications.html:65
+#: appartment/templates/manager/notifications/history_notifications.html:67
 #: appartment/templates/manager/resident/resident_list.html:77
 #: appartment/templates/manager/room_history.html:64
+#: appartment/templates/resident/notifications/history_notifications.html:56
 msgid "Trạng thái"
 msgstr ""
 
@@ -162,6 +166,132 @@ msgid ""
 "người."
 msgstr ""
 
+#: appartment/templates/admin/notifications/history_notifications.html:5
+#: appartment/templates/base_admin.html:88
+#: appartment/templates/base_manager.html:88
+#: appartment/templates/base_resident.html:59
+#: appartment/templates/manager/notifications/history_notifications.html:5
+#: appartment/templates/resident/notifications/history_notifications.html:5
+msgid "Lịch sử thông báo"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:21
+#: appartment/templates/manager/notifications/history_notifications.html:21
+#: appartment/templates/resident/notifications/history_notifications.html:21
+msgid "Sắp xếp"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:23
+#: appartment/templates/manager/notifications/history_notifications.html:23
+#: appartment/templates/resident/notifications/history_notifications.html:23
+msgid "Mới nhất"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:24
+#: appartment/templates/manager/notifications/history_notifications.html:24
+#: appartment/templates/resident/notifications/history_notifications.html:24
+msgid "Cũ nhất"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:28
+#: appartment/templates/manager/notifications/history_notifications.html:28
+msgid "Loại thông báo"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:30
+#: appartment/templates/manager/notifications/history_notifications.html:30
+msgid "Tất cả"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:31
+#: appartment/templates/manager/notifications/history_notifications.html:33
+msgid "Dành cho bạn"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:32
+#: appartment/templates/manager/notifications/history_notifications.html:34
+msgid "Do bạn gửi"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:36
+#: appartment/templates/manager/notifications/history_notifications.html:38
+#: appartment/templates/manager/room_history.html:62
+#: appartment/templates/resident/notifications/history_notifications.html:28
+msgid "Tháng"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:40
+#: appartment/templates/manager/notifications/history_notifications.html:42
+#: appartment/templates/resident/notifications/history_notifications.html:32
+msgid "Ngày"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:44
+#: appartment/templates/manager/notifications/history_notifications.html:46
+#: appartment/templates/resident/notifications/history_notifications.html:36
+msgid "Tìm kiếm"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:45
+#: appartment/templates/manager/notifications/history_notifications.html:47
+#: appartment/templates/resident/notifications/history_notifications.html:37
+msgid "Tìm theo tiêu đề, nội dung, người gửi"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:48
+#: appartment/templates/manager/notifications/history_notifications.html:50
+#: appartment/templates/resident/notifications/history_notifications.html:40
+msgid "Áp dụng"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:59
+#: appartment/templates/manager/notifications/history_notifications.html:61
+#: appartment/templates/manager/resident/resident_list.html:21
+#: appartment/templates/resident/notifications/history_notifications.html:51
+msgid "ID"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:60
+#: appartment/templates/manager/notifications/history_notifications.html:62
+#: appartment/templates/resident/notifications/history_notifications.html:52
+msgid "Tiêu đề"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:61
+#: appartment/templates/manager/notifications/history_notifications.html:63
+#: appartment/templates/resident/notifications/history_notifications.html:53
+msgid "Nội dung"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:62
+#: appartment/templates/manager/notifications/history_notifications.html:64
+#: appartment/templates/resident/notifications/history_notifications.html:54
+msgid "Người gửi"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:63
+#: appartment/templates/manager/notifications/history_notifications.html:65
+msgid "Người nhận"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:64
+#: appartment/templates/manager/notifications/history_notifications.html:66
+#: appartment/templates/resident/notifications/history_notifications.html:55
+msgid "Ngày tạo"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:66
+#: appartment/templates/manager/notifications/history_notifications.html:68
+#: appartment/templates/manager/resident/resident_list.html:27
+#: appartment/templates/resident/notifications/history_notifications.html:57
+msgid "Hành động"
+msgstr ""
+
+#: appartment/templates/admin/notifications/history_notifications.html:80
+#: appartment/templates/manager/notifications/history_notifications.html:82
+msgid "Hệ thống"
+msgstr ""
+
 #: appartment/templates/auth/login.html:10
 msgid "Đăng nhập vào hệ thống"
 msgstr ""
@@ -191,34 +321,39 @@ msgstr ""
 msgid "Appartment-Manager"
 msgstr ""
 
+#: appartment/templates/base_admin.html:19
+#: appartment/templates/base_manager.html:19
+#: appartment/templates/base_resident.html:20
+msgid "Thông tin tòa nhà"
+msgstr ""
+
+#: appartment/templates/base_admin.html:34
+#: appartment/templates/base_manager.html:34
+msgid "Quản lý hóa đơn"
+msgstr ""
+
+#: appartment/templates/base_admin.html:49
+#: appartment/templates/base_manager.html:49
+msgid "Quản lý căn hộ"
+msgstr ""
+
+#: appartment/templates/base_admin.html:64
+#: appartment/templates/base_manager.html:64
+msgid "Quản lý cư dân"
+msgstr ""
+
+#: appartment/templates/base_admin.html:79
+#: appartment/templates/base_manager.html:79
+#: appartment/templates/base_resident.html:50
+msgid "Quản lý yêu cầu"
+msgstr ""
+
 #: appartment/templates/base_header.html:42
 msgid "Tài khoản"
 msgstr ""
 
 #: appartment/templates/base_header.html:63
 msgid "Đăng xuất"
-msgstr ""
-
-#: appartment/templates/base_manager.html:19
-#: appartment/templates/base_resident.html:20
-msgid "Thông tin tòa nhà"
-msgstr ""
-
-#: appartment/templates/base_manager.html:34
-msgid "Quản lý hóa đơn"
-msgstr ""
-
-#: appartment/templates/base_manager.html:49
-msgid "Quản lý căn hộ"
-msgstr ""
-
-#: appartment/templates/base_manager.html:64
-msgid "Quản lý cư dân"
-msgstr ""
-
-#: appartment/templates/base_manager.html:79
-#: appartment/templates/base_resident.html:50
-msgid "Quản lý yêu cầu"
 msgstr ""
 
 #: appartment/templates/base_message.html:11
@@ -249,13 +384,47 @@ msgstr ""
 msgid "Khám phá ngay"
 msgstr ""
 
+#: appartment/templates/manager/notifications/history_notifications.html:31
+msgid "Từ người thuê"
+msgstr ""
+
+#: appartment/templates/manager/notifications/history_notifications.html:32
+msgid "Từ admin"
+msgstr ""
+
+#: appartment/templates/manager/notifications/history_notifications.html:88
+#: appartment/templates/resident/notifications/history_notifications.html:70
+msgid "Chưa đọc"
+msgstr ""
+
+#: appartment/templates/manager/notifications/history_notifications.html:90
+#: appartment/templates/resident/notifications/history_notifications.html:72
+msgid "Đã đọc"
+msgstr ""
+
+#: appartment/templates/manager/notifications/history_notifications.html:97
+#: appartment/templates/resident/notifications/history_notifications.html:79
+msgid "Đánh dấu đã đọc"
+msgstr ""
+
+#: appartment/templates/manager/notifications/history_notifications.html:104
+#: appartment/templates/resident/notifications/history_notifications.html:86
+msgid "Chưa có thông báo nào."
+msgstr ""
+
+#: appartment/templates/manager/notifications/history_notifications.html:115
+#: appartment/templates/resident/notifications/history_notifications.html:97
+msgid "Trước"
+msgstr ""
+
+#: appartment/templates/manager/notifications/history_notifications.html:125
+#: appartment/templates/resident/notifications/history_notifications.html:106
+msgid "Tiếp"
+msgstr ""
+
 #: appartment/templates/manager/resident/resident_list.html:6
 #: appartment/templates/manager/room_history.html:65
 msgid "Danh sách cư dân"
-msgstr ""
-
-#: appartment/templates/manager/resident/resident_list.html:21
-msgid "ID"
 msgstr ""
 
 #: appartment/templates/manager/resident/resident_list.html:22
@@ -272,10 +441,6 @@ msgstr ""
 
 #: appartment/templates/manager/resident/resident_list.html:26
 msgid "Phòng hiện tại"
-msgstr ""
-
-#: appartment/templates/manager/resident/resident_list.html:27
-msgid "Hành động"
 msgstr ""
 
 #: appartment/templates/manager/resident/resident_list.html:45
@@ -381,10 +546,6 @@ msgstr ""
 
 #: appartment/templates/manager/room_history.html:58
 msgid "Chi tiết thay đổi theo tháng"
-msgstr ""
-
-#: appartment/templates/manager/room_history.html:62
-msgid "Tháng"
 msgstr ""
 
 #: appartment/templates/manager/room_history.html:75
@@ -706,6 +867,14 @@ msgstr ""
 msgid "Bạn đã có tài khoản?"
 msgstr ""
 
+#: appartment/utils/notification_utils.py:35
+msgid "Định dạng tháng không hợp lệ."
+msgstr ""
+
+#: appartment/utils/notification_utils.py:43
+msgid "Định dạng ngày không hợp lệ."
+msgstr ""
+
 #: appartment/utils/permissions.py:10 appartment/utils/permissions.py:29
 msgid "Bạn không có quyền truy cập chức năng này."
 msgstr ""
@@ -749,38 +918,20 @@ msgstr ""
 msgid "Phòng không khả dụng hoặc đã đầy."
 msgstr ""
 
-#: appartment/views/manager/resident_views.py:140
-msgid "Gán phòng mới"
-msgstr ""
-
-#: appartment/views/manager/resident_views.py:141
-#, python-format
-msgid "Bạn đã được gán vào phòng %(room_id)s từ ngày %(date)s."
-msgstr ""
-
-#: appartment/views/manager/resident_views.py:158
-msgid "Thành viên mới trong phòng"
-msgstr ""
-
-#: appartment/views/manager/resident_views.py:160
-#, python-format
-msgid "Cư dân %(name)s đã được chuyển đến phòng %(room_id)s từ ngày %(date)s."
-msgstr ""
-
-#: appartment/views/manager/resident_views.py:171
+#: appartment/views/manager/resident_views.py:138
 #, python-format
 msgid "Gán phòng thành công cho cư dân %(name)s."
 msgstr ""
 
-#: appartment/views/manager/resident_views.py:175
+#: appartment/views/manager/resident_views.py:142
 msgid "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại."
 msgstr ""
 
-#: appartment/views/manager/resident_views.py:193
+#: appartment/views/manager/resident_views.py:160
 msgid "Cư dân này hiện không ở trong phòng nào."
 msgstr ""
 
-#: appartment/views/manager/resident_views.py:236
+#: appartment/views/manager/resident_views.py:180
 #, python-brace-format
 msgid "Đã chuyển cư dân {resident.full_name} ra khỏi phòng thành công."
 msgstr ""
@@ -823,4 +974,12 @@ msgstr ""
 #: appartment/views/manager/room_views.py:161
 #, python-format
 msgid "Chỉnh sửa phòng %(room_id)s"
+msgstr ""
+
+#: appartment/views/notification_history.py:114
+msgid "Bạn không có quyền xem thông báo này."
+msgstr ""
+
+#: appartment/views/notification_history.py:119
+msgid "Thông báo đã được đánh dấu là đã đọc."
 msgstr ""
