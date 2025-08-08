@@ -50,8 +50,15 @@ def notification_history(request, role, base_query, template_name, filter_types=
             notifications = notifications.filter(receiver=request.user)
         elif filter_type == "by_admin":
             notifications = notifications.filter(sender=request.user)
-    elif role == UserRole.RESIDENT.value:
-        filter_type = "to_me"  # Chỉ có một loại filter cho resident
+        elif filter_type == "from_resident":
+            notifications = notifications.filter(
+                receiver__isnull=True, sender__role__role_name=UserRole.RESIDENT.value
+            )
+    elif role == UserRole.RESIDENT.value and filter_type != "all":
+        if filter_type == "to_me":
+            notifications = notifications.filter(receiver=request.user)
+        elif filter_type == "by_me":
+            notifications = notifications.filter(sender=request.user)
 
     context = filter_notifications(request, notifications)
     context["filter_type"] = filter_type
@@ -65,13 +72,14 @@ def resident_notification_history(request):
     Hiển thị lịch sử thông báo cho người thuê.
     """
     notifications = Notification.objects.filter(
-        receiver=request.user  # Chỉ lấy thông báo gửi đến người thuê
+        Q(receiver=request.user) | Q(sender=request.user)
     )
     return notification_history(
         request,
         UserRole.RESIDENT.value,
         notifications,
         "resident/notifications/history_notifications.html",
+        filter_types=["to_me", "by_me"],
     )
 
 
@@ -107,7 +115,10 @@ def admin_notification_history(request):
     Hiển thị lịch sử thông báo cho admin.
     """
     notifications = Notification.objects.filter(
-        Q(receiver=request.user)  # Dành riêng cho admin
+        Q(
+            receiver__isnull=True, sender__role__role_name=UserRole.RESIDENT.value
+        )  # Từ người thuê gửi lên hệ thống
+        | Q(receiver=request.user)  # Dành riêng cho admin
         | Q(sender=request.user)  # Do admin gửi
     )
 
@@ -116,7 +127,7 @@ def admin_notification_history(request):
         UserRole.ADMIN.value,
         notifications,
         "admin/notifications/history_notifications.html",
-        filter_types=["to_admin", "by_admin"],
+        filter_types=["from_resident", "to_admin", "by_admin"],
     )
 
 

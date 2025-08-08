@@ -1,4 +1,4 @@
-{% extends "base_manager.html" %}
+{% extends "base_resident.html" %}
 {% load i18n %}
 {% block content %}
 <div class="p-6 bg-gray-50 min-h-screen">
@@ -30,10 +30,8 @@
                     <label class="block text-gray-700">{% trans "Loại thông báo" %}</label>
                     <select name="filter_type" class="w-full p-2 border rounded">
                         <option value="all" {% if filter_type == 'all' %}selected{% endif %}>{% trans "Tất cả" %}</option>
-                        <option value="from_resident" {% if filter_type == 'from_resident' %}selected{% endif %}>{% trans "Từ người thuê" %}</option>
-                        <option value="from_admin" {% if filter_type == 'from_admin' %}selected{% endif %}>{% trans "Từ admin" %}</option>
-                        <option value="to_manager" {% if filter_type == 'to_manager' %}selected{% endif %}>{% trans "Dành cho bạn" %}</option>
-                        <option value="by_manager" {% if filter_type == 'by_manager' %}selected{% endif %}>{% trans "Do bạn gửi" %}</option>
+                        <option value="to_me" {% if filter_type == 'to_me' %}selected{% endif %}>{% trans "Gửi đến tôi" %}</option>
+                        <option value="by_me" {% if filter_type == 'by_me' %}selected{% endif %}>{% trans "Do tôi gửi" %}</option>
                     </select>
                 </div>
                 <div>
@@ -75,26 +73,30 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in notifications_with_status %}
+                    {% for notification in notifications %}
                         <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="py-4 px-6 text-center">{{ item.notification.notification_id }}</td>
-                            <td class="py-4 px-6 text-center">{{ item.notification.title }}</td>
-                            <td class="py-4 px-6 text-center">{{ item.notification.message|truncatewords:20 }}</td>
-                            <td class="py-4 px-6 text-center">{{ item.notification.sender.full_name }}</td>
+                            <td class="py-4 px-6 text-center">{{ notification.notification_id }}</td>
+                            <td class="py-4 px-6 text-center">{{ notification.title }}</td>
+                            <td class="py-4 px-6 text-center">{{ notification.message|truncatewords:20 }}</td>
+                            <td class="py-4 px-6 text-center">{{ notification.sender.full_name }}</td>
                             <td class="py-4 px-6 text-center">
-                                {% if item.notification.receiver %}
-                                    {{ item.notification.receiver.full_name }}
+                                {% if notification.receiver %}
+                                    {{ notification.receiver.full_name }}
                                 {% else %}
                                     {% trans "Hệ thống" %}
                                 {% endif %}
                             </td>
-                            <td class="py-4 px-6 text-center">{{ item.notification.created_at|date:"d/m/Y H:i" }}</td>
+                            <td class="py-4 px-6 text-center">{{ notification.created_at|date:"d/m/Y H:i" }}</td>
                             <td class="py-4 px-6 text-center">
-                                <span class="{{ item.status_color }}">{{ item.status_display }}</span>
+                                {% if notification.status == 'unread' %}
+                                    <span class="text-red-600">{% trans "Chưa đọc" %}</span>
+                                {% else %}
+                                    <span class="text-green-600">{% trans "Đã đọc" %}</span>
+                                {% endif %}
                             </td>
                             <td class="py-4 px-6 text-center">
-                                {% if item.notification.status == 'unread' %}
-                                    <form method="post" action="{% url 'mark_notification_read' item.notification.notification_id %}">
+                                {% if notification.status == 'unread' %}
+                                    <form method="post" action="{% url 'appartment:mark_notification_read' notification.notification_id %}">
                                         {% csrf_token %}
                                         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">{% trans "Đánh dấu đã đọc" %}</button>
                                     </form>
@@ -114,17 +116,17 @@
             <div class="mt-4 flex justify-center">
                 <nav class="inline-flex rounded-md shadow">
                     {% if notifications.has_previous %}
-                        <a href="?page={{ notifications.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Trước" %}</a>
+                        <a href="?page={{ notifications.previous_page_number }}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if filter_month %}&filter_month={{ filter_month }}{% endif %}{% if filter_date %}&filter_date={{ filter_date }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Trước" %}</a>
                     {% endif %}
                     {% for num in notifications.paginator.page_range %}
                         {% if notifications.number == num %}
                             <span class="px-3 py-2 border border-gray-300 bg-blue-600 text-white">{{ num }}</span>
                         {% else %}
-                            <a href="?page={{ num }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{{ num }}</a>
+                            <a href="?page={{ num }}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if filter_month %}&filter_month={{ filter_month }}{% endif %}{% if filter_date %}&filter_date={{ filter_date }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{{ num }}</a>
                         {% endif %}
                     {% endfor %}
                     {% if notifications.has_next %}
-                        <a href="?page={{ notifications.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Tiếp" %}</a>
+                        <a href="?page={{ notifications.next_page_number }}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if filter_month %}&filter_month={{ filter_month }}{% endif %}{% if filter_date %}&filter_date={{ filter_date }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Tiếp" %}</a>
                     {% endif %}
                 </nav>
             </div>

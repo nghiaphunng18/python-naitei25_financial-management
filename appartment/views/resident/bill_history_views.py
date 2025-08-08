@@ -20,9 +20,7 @@ def resident_bill_history(request):
     user = request.user
 
     # Lấy tất cả các phòng mà user đang ở và đã từng ở
-    room_residents = RoomResident.objects.filter(user=user).select_related(
-        "room"
-    )
+    room_residents = RoomResident.objects.filter(user=user).select_related("room")
 
     # Tạo danh sách các điều kiện để lọc bill
     bill_conditions = Q()
