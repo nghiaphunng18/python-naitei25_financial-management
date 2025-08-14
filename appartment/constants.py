@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class StringLength(Enum):
+    VERY_SHORT = 10
     SHORT = 20
     MEDIUM = 30
     LONG = 50
@@ -36,6 +37,7 @@ class BillStatus(Enum):
 class PaymentStatus(Enum):
     UNPAID = "unpaid"
     PAID = "paid"
+    OVERDUE = "overdue"
 
     @classmethod
     def choices(cls):
@@ -96,3 +98,12 @@ class UserRole(Enum):
     @classmethod
     def choices(cls):
         return [(role.value, role.name.replace("_", " ").title()) for role in cls]
+
+
+class PaginateNumber(Enum):
+    P_SHORT = 10
+    P_LONG = 20
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name.replace("_", " ").title()) for key in cls]

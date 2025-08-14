@@ -1,0 +1,73 @@
+{% extends "base_manager.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+<div class="max-w-4xl mx-auto my-8 p-8 bg-white border border-gray-200 rounded-lg shadow-lg">
+        
+        <div class="flex justify-between items-start pb-5 border-b-2 border-gray-200">
+            <div>
+                <h1 class="text-4xl font-bold">{% trans "HÓA ĐƠN" %}</h1>
+                <p>{% trans "Số HĐ:" %} #{{ bill.bill_id }}</p>
+                <p>{% trans "Tháng:" %} {{ bill.bill_month|date:"m/Y" }}</p>
+            </div>
+
+            <a href="{% url 'bill' bill.bill_id %}" 
+               class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold rounded-lg shadow-sm transition duration-300 print:hidden">
+                &larr; {% trans "Quay lại chi tiết" %}
+            </a>
+        </div>
+
+        <div class="flex justify-between mt-8">
+            <div>
+                <p class="font-bold">{% trans "HÓA ĐƠN CHO:" %}</p>
+                {% for resident in historical_residents %}
+                    <p>{{ resident.user.full_name }}</p>
+                {% endfor %}
+                <p>{{ bill.room.description }}</p>
+            </div>
+            <div class="text-right">
+                <p><strong>{% trans "Ngày tạo hóa đơn:" %}</strong> {{ bill.created_at|date:"d/m/Y" }}</p>
+                <p><strong>{% trans "Hạn thanh toán:" %}</strong> {{ bill.due_date|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+
+        <table class="w-full text-left border-collapse mt-10">
+            <thead class="bg-gray-100 font-bold">
+                <tr>
+                    <td class="p-3 border">{% trans "Diễn giải" %}</td>
+                    <td class="p-3 border text-right">{% trans "Thành tiền" %}</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b">
+                    <td class="p-3 border">1. {% trans "Tiền thuê phòng" %}</td>
+                    <td class="p-3 border text-right">{{ rental_price.price|floatformat:0|default:"N/A" }} VNĐ</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-3 border">2. {% trans "Tiền điện" %}</td>
+                    <td class="p-3 border text-right">{{ bill.electricity_amount|floatformat:0 }} VNĐ</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-3 border">3. {% trans "Tiền nước" %}</td>
+                    <td class="p-3 border text-right">{{ bill.water_amount|floatformat:0 }} VNĐ</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-3 border">4. {% trans "Dịch vụ cộng thêm" %}</td>
+                    <td class="p-3 border text-right">{{ bill.additional_service_amount|floatformat:0 }} VNĐ</td>
+                </tr>
+            </tbody>
+            <tfoot class="font-bold">
+                <tr>
+                    <td class="p-3 text-right text-lg">{% trans "TỔNG CỘNG" %}</td>
+                    <td class="p-3 border text-right text-lg">{{ bill.total_amount|floatformat:0 }} VNĐ</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="mt-12 text-center text-sm text-gray-600">
+            <p>{% trans "Cảm ơn quý khách. Vui lòng thanh toán trước ngày hết hạn." %}</p>
+            <p>{% trans "Thông tin chuyển khoản: [123454654] - [MB*] - [Pham Gia Bao]" %}</p>
+        </div>
+    </div>
+    <script src="{% static 'js/manager/print_bill.js' %}"></script>
+{% endblock %}

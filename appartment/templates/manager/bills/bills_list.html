@@ -1,0 +1,118 @@
+{% extends "base_manager.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+{% load custom_bill_status %}
+<main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+    <!-- Header của trang -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{% trans "Quản Lý Hóa Đơn" %}</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">{% trans "Xem và quản lý tất cả các hóa đơn trong hệ thống." %}</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <!-- Nút này có thể dùng để kích hoạt một modal tạo hóa đơn hàng loạt -->
+            <a href="{% url 'bill_create' %}">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    {% trans "Tạo Hóa Đơn" %}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <!-- Khu vực bộ lọc và tìm kiếm -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Bộ lọc theo trạng thái -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Trạng thái" %}</label>
+                <select id="status" name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <option value="">{% trans "Tất cả" %}</option>
+                    <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>{% trans "Đã thanh toán" %}</option>
+                    <option value="unpaid" {% if request.GET.status == 'unpaid' %}selected{% endif %}>{% trans "Chưa thanh toán" %}</option>
+                    <option value="overdue" {% if request.GET.status == 'overdue' %}selected{% endif %}>{% trans "Quá hạn" %}</option>
+                </select>
+            </div>
+            <!-- Bạn có thể thêm các bộ lọc khác ở đây -->
+            
+            <!-- Nút lọc -->
+            <div class="md:col-start-4">
+                <button type="submit" class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    {% trans "Lọc" %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lưới danh sách hóa đơn (thay thế cho bảng) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for bill in bills_list %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 flex flex-col justify-between transition-transform transform hover:-translate-y-1 hover:shadow-xl">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ bill.room.description }}</p>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">{% trans "Hóa đơn tháng" %} {{ bill.bill_month|date:"m/Y" }}</h3>
+                </div>
+                <div>
+                    {% display_bill_status bill style='badge' %}
+                </div>
+            </div>
+
+            <div class="space-y-3 text-sm mb-5">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 dark:text-gray-400">{% trans "Mã HĐ:" %}</span>
+                    <span class="font-medium text-gray-800 dark:text-white">#{{ bill.bill_id }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 dark:text-gray-400">{% trans "Người ở:" %}</span>
+                    <span class="font-medium text-gray-800 dark:text-white text-right">
+                        {% for resident in bill.historical_residents %}
+                            {{ resident.user.full_name }}
+                            {% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            {% trans "Chưa có ai" %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="border-t border-gray-200 dark:border-gray-700 my-3"></div>
+                <div class="flex justify-between items-center text-lg">
+                    <span class="text-gray-600 dark:text-gray-300 font-semibold">{% trans "Tổng tiền:" %}</span>
+                    <span class="font-bold text-blue-600 dark:text-blue-400">{{ bill.total_amount|floatformat:0 }} VNĐ</span>
+                </div>
+            </div>
+
+            <div class="mt-auto">
+                <a href="{% url 'bill' bill.bill_id %}" class="w-full block text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    {% trans "Xem Chi Tiết" %}
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-1 md:col-span-2 xl:col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center text-gray-500">
+            <p class="text-lg">{% trans "Không có hóa đơn nào để hiển thị." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Phân trang -->
+    {% if is_paginated %}
+    <div class="mt-6 flex items-center justify-between">
+        <div class="text-sm text-gray-700 dark:text-gray-300">
+            {% trans "Trang" %} {{ page_obj.number }} {% trans "của" %} {{ page_obj.paginator.num_pages }}.
+        </div>
+        <div class="flex items-center space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">{% trans "Trước" %}</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">{% trans "Sau" %}</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base_manager.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+{% load custom_bill_status %}
+<main x-data="{ isModalOpen: false }" @keydown.escape.window="isModalOpen = false" class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{% trans "Chi Tiết Hóa Đơn" %} #{{ bill.bill_id }}</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">{% trans "Hóa đơn cho" %} <span class="font-semibold">{{ bill.room.description }}</span> - {% trans "Tháng" %} <span class="font-semibold">{{ bill.bill_month|date:"m/Y" }}</span></p>
+        </div>
+        
+        <div class="mt-4 md:mt-0 flex items-center space-x-3">
+            <a href="{% url 'bill_update' bill.bill_id %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                {% trans "Sửa Hóa Đơn" %}
+            </a>
+            
+            {% if bill.status != 'paid' and bill.status != 'PAID' %}
+                <form action="{% url 'bill_confirm_payment' bill.bill_id %}" method="post" class="inline-block">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                        {% trans "Xác nhận thanh toán" %}
+                    </button>
+                </form>
+            {% endif %}
+            
+            <a href="{% url 'bill_print' bill.bill_id %}" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                {% trans "In hóa đơn" %}
+            </a>
+            
+            <button @click="isModalOpen = true" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                {% trans "Xóa Hóa Đơn" %}
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <div class="flex flex-col md:flex-row justify-between items-start pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">{{ bill.room.description }}</h2>
+                {% for resident in historical_residents %}
+                    <p class="text-gray-600 dark:text-gray-400">{% trans "Chủ hộ:" %} <span class="font-medium">{{ resident.user.full_name }}</span></p>
+                    <p class="text-gray-600 dark:text-gray-400">{% trans "Email:" %} <span class="font-medium">{{ resident.user.email }}</span></p>
+                {% empty %}
+                     <p class="text-gray-600 dark:text-gray-400">{% trans "Chủ hộ:" %} <span class="font-medium">{% trans "Chưa có người ở" %}</span></p>
+                {% endfor %}
+            </div>
+            <div class="text-right mt-4 md:mt-0">
+                <p class="text-gray-500 dark:text-gray-400">{% trans "Trạng thái" %}</p>
+                {% display_bill_status bill %}
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Ngày tạo:" %} {{ bill.created_at|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-white mb-4">{% trans "Chi tiết các khoản phí" %}</h3>
+            <div class="flow-root">
+                <ul role="list" class="-my-4 divide-y divide-gray-200 dark:divide-gray-700">
+                    <li class="flex items-center justify-between py-4">
+                        <p class="text-gray-600 dark:text-gray-300">1. {% trans "Tiền thuê phòng" %}</p>
+                        <p class="font-medium text-gray-900 dark:text-white">{{ rental_price.price|floatformat:0|default:"N/A" }} VNĐ</p>
+                    </li>
+                    <li class="flex items-center justify-between py-4">
+                        <p class="text-gray-600 dark:text-gray-300">2. {% trans "Tiền điện" %}</p>
+                        <p class="font-medium text-gray-900 dark:text-white">{{ bill.electricity_amount|floatformat:0 }} VNĐ</p>
+                    </li>
+                    <li class="flex items-center justify-between py-4">
+                        <p class="text-gray-600 dark:text-gray-300">3. {% trans "Tiền nước" %}</p>
+                        <p class="font-medium text-gray-900 dark:text-white">{{ bill.water_amount|floatformat:0 }} VNĐ</p>
+                    </li>
+                    <li class="flex items-center justify-between py-4">
+                        <p class="text-gray-600 dark:text-gray-300">4. {% trans "Dịch vụ cộng thêm" %}</p>
+                        <p class="font-medium text-gray-900 dark:text-white">{{ bill.additional_service_amount|floatformat:0 }} VNĐ</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <div class="w-full max-w-sm">
+                <div class="flex justify-between text-lg font-semibold">
+                    <span class="text-gray-800 dark:text-white">{% trans "TỔNG CỘNG" %}</span>
+                    <span class="text-blue-600 dark:text-blue-400">{{ bill.total_amount|floatformat:0 }} VNĐ</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-white mb-4">{% trans "Lịch sử thanh toán" %}</h3>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg shadow-inner overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="border-b border-gray-200 dark:border-gray-600">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{% trans "Ngày thanh toán" %}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{% trans "Số tiền" %}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{% trans "Phương thức" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in bill.payment_history.all %}
+                        <tr class="border-b border-gray-200 dark:border-gray-600">
+                            <td class="px-6 py-4 text-sm text-gray-800 dark:text-white">{{ payment.payment_date|date:"H:i - d/m/Y" }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-800 dark:text-white">{{ payment.amount_paid|floatformat:0 }} VNĐ</td>
+                            <td class="px-6 py-4 text-sm text-gray-800 dark:text-white">{{ payment.payment_method }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">{% trans "Chưa có lịch sử thanh toán." %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div
+        x-show="isModalOpen"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+        style="display: none;"
+    >
+        <div @click.away="isModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-lg w-full">
+            <h1 class="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">{% trans "Xác nhận Xóa Hóa Đơn" %}</h1>
+            <p class="text-gray-700 dark:text-gray-300 mb-6">
+                {% trans "Bạn có chắc chắn muốn xóa vĩnh viễn hóa đơn" %} #{{ bill.bill_id }}?
+                <br>
+                <span class="font-semibold">{% trans "Hành động này không thể hoàn tác." %}</span>
+            </p>
+
+            <form action="{% url 'bill_delete' bill.bill_id %}" method="post">
+                {% csrf_token %}
+                <div class="flex justify-end space-x-4">
+                    <button type="button" @click="isModalOpen = false" class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                        {% trans "Hủy" %}
+                    </button>
+                    <button type="submit" class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                       {% trans "Xác nhận Xóa" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}
