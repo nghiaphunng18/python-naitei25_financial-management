@@ -112,3 +112,5 @@ class PaginateNumber(Enum):
 
 DAY_MONTH_YEAR_FORMAT = "%d/%m/%Y"
 MONTH_YEAR_FORMAT = "%m/%Y"
+
+DEFAULT_PAGE_SIZE = 10

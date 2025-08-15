@@ -79,6 +79,17 @@
         <span>{% trans "Quản lý yêu cầu" %}</span>
       </a>
     </li>
+
+    <li class="p-2 w-full hover:bg-gray-500">
+      <a class="flex items-center gap-2 pl-2" href="{% url 'manager_notification_history' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M12 8v4l3 3m6-3a9 9 0 11-9-9v3"/>
+        </svg>
+          <span>{% trans "Lịch sử thông báo" %}</span>
+      </a>
+    </li>
+    
   </ul>
 </div>
 {% endblock%}
