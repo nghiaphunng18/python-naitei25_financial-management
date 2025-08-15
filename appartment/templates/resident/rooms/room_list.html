@@ -1,0 +1,67 @@
+{% extends "base_resident.html"%} {% load i18n %} {% load room_tags %} {% block content %}
+<div class="p-4">
+    <div>
+        <h1 class="text-3xl font-bold">{% trans "Danh sách phòng của" %} {{user_name}}</h1>
+        <p class="text-gray-600">{% trans "Danh sách gồm các phòng đang ở và đã ở." %}</p>
+    </div>
+    <div class="p-2 flex flex-wrap gap-6">
+        {% if room_infos %}
+            {% for room in room_infos %}
+            <div class="md:w-78 w-full shadow-xl rounded-lg">
+                <a class="flex flex-col p-4 pb-0"
+                   href="{% url 'resident_room_detail' room.room_id %}">
+                    <div class="flex justify-between items-center py-1">
+                        <span class="text-xl font-bold">{{ room.room_id }}</span>
+                         {% status_badge room.status %}
+                    </div>
+                    <div class="flex flex-col p-2">
+                        <div class="flex justify-between items-center pb-1">
+                            <span class="text-gray-600">{% trans "Diện tích:" %}</span>
+                            <span class="font-semibold">{{ room.area }} {% trans "m²" %}</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-1">
+                            <span class="text-gray-600">{% trans "Số người tối đa: "%}</span>
+                            <span class="font-semibold">{{ room.max_occupants }} {% trans "người" %}</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-1">
+                            <span class="text-gray-600">{% trans "Ngày vào: "%}</span>
+                            <span class="font-semibold">
+                                {% if room.move_in_date %}
+                                    {{ room.move_in_date|date:"d/m/Y" }}
+                                {% else %}
+                                   {% trans "N/A" %} 
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% trans "Ngày ra: "%}</span>
+                            <span class="font-semibold">
+                                {% if room.move_out_date %}
+                                    {{ room.move_out_date|date:"d/m/Y" }}
+                                {% else %}
+                                   {% trans "N/A" %} 
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <div class ="flex justify-between items-center bg-gray-100 py-3 px-4 rounded-b-lg">
+                    <a href="{% url 'resident_room_history' room.room_id %}" 
+                        class="flex items-center gap-1 bg-blue-100 text-blue-400 px-3 py-1 rounded-2xl">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>{% trans "Lịch sử " %}</span>
+                    </a>
+                    {% if room.remaining_slots is not None and room.remaining_slots >= 0 %}
+                        <span class="text-sm font-semibold text-blue-400">
+                            {% trans "Còn" %} {{ room.remaining_slots }} {% trans "chỗ " %}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="italic">{% trans "Không có lịch sử các phòng đang ở và đã ở" %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

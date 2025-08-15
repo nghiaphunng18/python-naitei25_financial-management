@@ -1,0 +1,100 @@
+{% extends "base_resident.html"%} {% load i18n %} {% load humanize %} {% load room_tags %} {% block content %}
+<div class="p-4">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold">{% trans "Chi tiết phòng " %} {{ room_id}}</h1>
+            <p class="text-gray-600">{% trans "Chi tiết phòng và danh sách cư dân." %}</p>
+        </div>
+        <div class="flex space-x-3">
+            {% back_link 'resident_room_list' %}
+            <a href="{% url 'resident_room_history' room_id %}" 
+                class="relative group inline-flex items-center justify-center px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition duration-200 whitespace-nowrap z-50">
+                    {% trans "Lịch sử phòng"%}
+                </span>
+            </a>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <div class="flex gap-6 m-4 flex-col lg:flex-row">
+        <div class="lg:w-1/3 p-4 shadow-xl rounded-lg">
+            <p class="font-semibold text-center py-2">{% trans "Thông tin phòng" %}</p>
+            <div class="flex justify-between items-center p-2">
+                <span class="text-gray-600">{% trans "Trạng thái: " %}</span>
+                {% status_badge status %}
+            </div>
+            <div class="flex justify-between items-center p-2">
+                <span class="text-gray-600">{% trans "Diện tích: " %}</span>
+                <span class="font-semibold">{{ area }} {% trans "m²" %}</span>
+            </div>
+            <div class="flex justify-between items-center p-2">
+                <span class="text-gray-600">{% trans "Số người tối đa: " %}</span>
+                <span class="font-semibold">{{ max_occupants }} {% trans "người" %}</span>
+            </div>
+            {% if remaining_slots is not None and remaining_slots >= 0 %}
+                <div class="flex justify-between items-center p-2">
+                    <span class="text-gray-600">{% trans "Chỗ trống: " %}</span>
+                    <span class="font-semibold text-blue-500">{{ remaining_slots }} {% trans "chỗ " %}</span>
+                </div>
+                <div class="flex justify-between items-center p-2">
+                    <span class="text-gray-600">{% trans "Giá phòng: " %}</span>
+                    <span class="font-semibold text-red-500">{{ current_rental_price|intcomma}} {% trans "VNĐ" %}</span>
+                </div>
+            {% endif %}
+            <div class="flex justify-between items-center p-2">
+                <span class="text-gray-600">{% trans "Ngày tạo phòng: " %}</span>
+                <span class="font-semibold">
+                    {% if created_at %}
+                        {{ created_at|date:"d/m/Y" }}
+                    {% else %}
+                        {% trans "N/A" %} 
+                    {% endif %}
+                </span>
+            </div>
+            {% if status == "Đã rời đi" %}
+                <div class="flex justify-between items-center p-2">
+                    <span class="text-gray-600">{% trans "Ngày vào phòng: " %}</span>
+                    <span class="font-semibold text-red-500">
+                        {% if move_in_date %}
+                            {{ move_in_date|date:"d/m/Y" }}
+                        {% else %}
+                            {% trans "N/A" %} 
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center p-2">
+                    <span class="text-gray-600">{% trans "Ngày rời đi: " %}</span>
+                    <span class="font-semibold text-red-500">
+                        {% if move_out_date %}
+                            {{ move_out_date|date:"d/m/Y" }}
+                        {% else %}
+                            {% trans "N/A" %} 
+                        {% endif %}
+                    </span>
+                </div>
+            {% endif %}
+            <div class="flex flex-col p-2">
+                <span class="font-semibold pb-1">{% trans "Mô tả: " %}</span>
+                <span class="rounded-lg p-2 bg-gray-100 text-gray-600">{{ description }}</span>
+            </div>
+        </div>
+        <div class="grow p-4 shadow-xl rounded-lg">
+            {% if current_residents %}
+                <p class="font-semibold text-center py-2">{% trans "Người ở hiện tại" %}</p>
+                {% for person in current_residents %}
+                    {% include "resident/rooms/resident_room_card.html" with person=person bg_color="bg-green-50" border_color="border-green-200" avatar_color="bg-green-500" status=_("Đang ở") status_color="text-green-600" %}
+                {% endfor %}
+            {% elif history_residents %}
+                <p class="font-semibold text-center py-2">{% trans "Lịch sử cư dân" %}</p>
+                {% for person in history_residents %}
+                    {% include "resident/rooms/resident_room_card.html" with person=person bg_color="bg-red-50" border_color="border-red-200" avatar_color="bg-red-500" status=None %}
+                {% endfor %}
+            {% else%}
+                <span>{% trans "Không có cư dân." %}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

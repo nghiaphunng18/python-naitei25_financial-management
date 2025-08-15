@@ -1,0 +1,27 @@
+{% load i18n %}
+
+<div class="flex justify-between items-center p-4 {{ bg_color }} border {{ border_color }} rounded-lg mb-2">
+    <div class="flex items-center gap-4">
+        <div class="w-10 h-10 {{ avatar_color }} rounded-full flex items-center justify-center text-white font-medium">
+            {{ person.user.full_name|first|upper }}
+        </div>
+        <div class="flex flex-col">
+            <span class="font-medium">{{ person.user.full_name }}</span>
+            <span class="text-sm text-gray-600">{{ person.user.email }}</span>
+            <span class="text-sm text-gray-600">{{ person.user.phone }}</span>
+        </div>
+    </div>
+    <div class="flex flex-col text-right">
+        <span class="font-medium">{% trans "Vào ở:" %}</span>
+        <span class="text-sm text-gray-600">
+            {% if person.move_in_date %}
+                {{ person.move_in_date|date:"d/m/Y H:i" }}
+            {% else %}
+                {% trans "N/A" %} 
+            {% endif %}
+        </span>
+        {% if status %}
+            <span class="text-sm {{ status_color }}">{{ status }}</span>
+        {% endif %}
+    </div>
+</div>
