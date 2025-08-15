@@ -8,7 +8,8 @@ from appartment.views.manager.resident_views import (
     leave_room,
 )
 from appartment.views.manager import room_views, room_history_views, bills_view
-from appartment.views import auth_views, base_views, dashboard_views
+from appartment.views.resident import bill_history_views
+
 
 urlpatterns = [
     path("", index, name="index"),
@@ -20,6 +21,11 @@ urlpatterns = [
     path("residents/", resident_list, name="resident_list"),
     path("resident/assign/<str:user_id>/", assign_room, name="assign_room"),
     path("resident/leave/<str:user_id>/", leave_room, name="leave_room"),
+    path(
+        "my-bills/",
+        bill_history_views.resident_bill_history,
+        name="bill_history",
+    ),
     path("<str:room_id>/", room_views.room_detail, name="room_detail"),
     path("<str:room_id>/edit/", room_views.room_update, name="room_update"),
     path(
@@ -28,8 +34,12 @@ urlpatterns = [
         name="room_history",
     ),
     path("bills_list", bills_view.bills_list_view.as_view(), name="bills_list"),
-    path("bill/create/", bills_view.BillCreateView.as_view(), name="bill_create"),
-    path("bill/<str:bill_id>/", bills_view.BillDetailView.as_view(), name="bill"),
+    path(
+        "bill/create/", bills_view.BillCreateView.as_view(), name="bill_create"
+    ),
+    path(
+        "bill/<str:bill_id>/", bills_view.BillDetailView.as_view(), name="bill"
+    ),
     path(
         "bill/<str:bill_id>/update/",
         bills_view.BillUpdateView.as_view(),

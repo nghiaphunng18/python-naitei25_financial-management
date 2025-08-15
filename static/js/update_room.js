@@ -35,8 +35,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const statusNames = {
                 'available': 'Có sẵn',
                 'occupied': 'Đã có người ở',
-                'maintenance': 'Bảo trì'
+                'maintenance': 'Bảo trì',
+                'unavailable': 'Không khả dụng'
             };
+            
             changes.push(`Trạng thái: ${statusNames[originalValues.status]} → ${statusNames[currentValues.status]}`);
         }
 

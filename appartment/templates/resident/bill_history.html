@@ -1,0 +1,153 @@
+{% extends "base_resident.html" %}
+{% load i18n %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+{% load bill_filters %}
+
+<div class="container mx-auto mt-6 px-4">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-file-invoice-dollar text-blue-500 mr-2"></i>
+            {% trans "Lịch sử hóa đơn" %}
+        </h1>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg p-6 text-center shadow-lg">
+            <h3 class="text-2xl font-semibold">{{ total_bills }}</h3>
+            <p class="mt-1"><i class="fas fa-file-invoice mr-1"></i> {% trans "Tổng hóa đơn" %}</p>
+        </div>
+        <div class="bg-green-500 text-white rounded-lg p-6 text-center shadow-lg">
+            <h3 class="text-2xl font-semibold">{{ paid_bills }}</h3>
+            <p class="mt-1"><i class="fas fa-check-circle mr-1"></i> {% trans "Đã thanh toán" %}</p>
+        </div>
+        <div class="bg-yellow-500 text-white rounded-lg p-6 text-center shadow-lg">
+            <h3 class="text-2xl font-semibold">{{ unpaid_bills }}</h3>
+            <p class="mt-1"><i class="fas fa-clock mr-1"></i> {% trans "Chưa thanh toán" %}</p>
+        </div>
+    </div>
+
+    <!-- Bills Table -->
+    {% if page_obj.object_list %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-700 font-semibold border-b-2 border-gray-200">
+                            <th class="p-4 text-left"><i class="fas fa-home mr-1"></i> {% trans "Phòng" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-calendar-alt mr-1"></i> {% trans "Tháng" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-bed mr-1"></i> {% trans "Tiền nhà" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-bolt mr-1"></i> {% trans "Tiền điện" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-tint mr-1"></i> {% trans "Tiền nước" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-plus-circle mr-1"></i> {% trans "Dịch vụ thêm" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-money-bill-wave mr-1"></i> {% trans "Tổng tiền" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-info-circle mr-1"></i> {% trans "Trạng thái" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-calendar-times mr-1"></i> {% trans "Hạn thanh toán" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in page_obj %}
+                            <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                <td class="p-4">
+                                    {{ bill.room.room_id|room_id_badge }}
+                                </td>
+                                <td class="p-4 text-gray-700">
+                                    {{ bill.bill_month|date:"m/Y" }}
+                                </td>
+                                <td class="p-4">
+                                    {{ bill.rent_amount|format_currency }}
+                                </td>
+                                <td class="p-4">
+                                    {{ bill.electricity_amount|format_currency }}
+                                </td>
+                                <td class="p-4">
+                                    {{ bill.water_amount|format_currency }}
+                                </td>
+                                <td class="p-4">
+                                    {{ bill.additional_service_amount|format_currency }}
+                                </td>
+                                <td class="p-4">
+                                    {{ bill.total_amount|format_total_amount }}
+                                </td>
+                                <td class="p-4">
+                                    {{ bill.status|payment_status_badge }}
+                                </td>
+                                <td class="p-4">
+                                    {{ bill|format_due_date }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="{% trans 'Phân trang hóa đơn' %}" class="mt-8">
+                <ul class="flex justify-center items-center space-x-1">
+                    {% if page_obj.has_previous %}
+                        <li>
+                            <a class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 transition-colors" href="?page=1">
+                                <i class="fas fa-angle-double-left mr-1"></i> {% trans "Đầu" %}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 transition-colors" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-angle-left mr-1"></i> {% trans "Trước" %}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Page numbers -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li>
+                                <span class="px-3 py-2 text-sm leading-tight text-blue-600 bg-blue-50 border border-blue-300 font-medium">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li>
+                                <a class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 transition-colors" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li>
+                            <a class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 transition-colors" href="?page={{ page_obj.next_page_number }}">
+                                {% trans "Sau" %} <i class="fas fa-angle-right ml-1"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 transition-colors" href="?page={{ page_obj.paginator.num_pages }}">
+                                {% trans "Cuối" %} <i class="fas fa-angle-double-right ml-1"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <!-- Page info -->
+            <div class="text-center text-gray-500 mt-4 text-sm">
+                {% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages count=page_obj.paginator.count %}
+                Trang {{ current }} / {{ total }} ({{ count }} hóa đơn)
+                {% endblocktrans %}
+            </div>
+        {% endif %}
+
+    {% else %}
+        <!-- No Bills Found -->
+        <div class="text-center py-16">
+            <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fas fa-file-invoice-dollar text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">{% trans "Không có hóa đơn nào" %}</h3>
+            <p class="text-gray-500">{% trans "Bạn chưa có hóa đơn nào hoặc chưa từng ở phòng nào." %}</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

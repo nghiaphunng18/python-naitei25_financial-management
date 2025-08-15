@@ -183,5 +183,10 @@ class UpdateRoomForm(forms.ModelForm):
         if status == RoomStatus.MAINTENANCE and self.current_occupants > 0:
             # Không block nhưng có thể thêm warning message
             pass
-
+        if status == "unavailable" and self.current_occupants > 0:
+            raise forms.ValidationError(
+                _(
+                    "Không thể chuyển sang trạng thái Unavailable khi vẫn còn người ở."
+                )
+            )
         return status
