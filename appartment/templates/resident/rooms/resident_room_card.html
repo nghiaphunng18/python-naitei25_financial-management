@@ -1,27 +1,126 @@
+{% extends "base_resident.html" %}
 {% load i18n %}
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">{% trans "Lịch sử thông báo" %}</h1>
 
-<div class="flex justify-between items-center p-4 {{ bg_color }} border {{ border_color }} rounded-lg mb-2">
-    <div class="flex items-center gap-4">
-        <div class="w-10 h-10 {{ avatar_color }} rounded-full flex items-center justify-center text-white font-medium">
-            {{ person.user.full_name|first|upper }}
+    {% if messages %}
+        <div class="mb-6 max-w-full mx-auto">
+            {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} rounded-lg shadow-md">
+                    {{ message }}
+                </div>
+            {% endfor %}
         </div>
-        <div class="flex flex-col">
-            <span class="font-medium">{{ person.user.full_name }}</span>
-            <span class="text-sm text-gray-600">{{ person.user.email }}</span>
-            <span class="text-sm text-gray-600">{{ person.user.phone }}</span>
-        </div>
+    {% endif %}
+
+    <!-- Form lọc và tìm kiếm -->
+    <div class="max-w-full mx-auto mb-6 bg-white p-4 rounded-lg shadow-md">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-gray-700">{% trans "Sắp xếp" %}</label>
+                <select name="sort_by" class="w-full p-2 border rounded">
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>{% trans "Mới nhất" %}</option>
+                    <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>{% trans "Cũ nhất" %}</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700">{% trans "Loại thông báo" %}</label>
+                <select name="filter_type" class="w-full p-2 border rounded">
+                    <option value="all" {% if filter_type == 'all' %}selected{% endif %}>{% trans "Tất cả" %}</option>
+                    <option value="to_me" {% if filter_type == 'to_me' %}selected{% endif %}>{% trans "Gửi đến tôi" %}</option>
+                    <option value="by_me" {% if filter_type == 'by_me' %}selected{% endif %}>{% trans "Do tôi gửi" %}</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700">{% trans "Tháng" %}</label>
+                <input type="month" name="filter_month" value="{{ filter_month }}" class="w-full p-2 border rounded">
+            </div>
+            <div>
+                <label class="block text-gray-700">{% trans "Ngày" %}</label>
+                <input type="date" name="filter_date" value="{{ filter_date }}" class="w-full p-2 border rounded">
+            </div>
+            <div class="md:col-span-4">
+                <label class="block text-gray-700">{% trans "Tìm kiếm" %}</label>
+                <input type="text" name="search_query" value="{{ search_query }}" placeholder="{% trans 'Tìm theo tiêu đề, nội dung, người gửi' %}" class="w-full p-2 border rounded">
+            </div>
+            <div class="md:col-span-4 flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">{% trans "Áp dụng" %}</button>
+            </div>
+        </form>
     </div>
-    <div class="flex flex-col text-right">
-        <span class="font-medium">{% trans "Vào ở:" %}</span>
-        <span class="text-sm text-gray-600">
-            {% if person.move_in_date %}
-                {{ person.move_in_date|date:"d/m/Y H:i" }}
-            {% else %}
-                {% trans "N/A" %} 
-            {% endif %}
-        </span>
-        {% if status %}
-            <span class="text-sm {{ status_color }}">{{ status }}</span>
+
+    <!-- Bảng thông báo -->
+    <div class="max-w-full mx-auto">
+        <div class="overflow-x-auto shadow-md rounded-lg">
+            <table class="min-w-full bg-white border border-gray-200">
+                <thead class="bg-gray-100">
+                    <tr class="text-gray-600 uppercase text-sm">
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "ID" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Tiêu đề" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Nội dung" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Người gửi" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Người nhận" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Ngày tạo" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Trạng thái" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Hành động" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in notifications_with_status %}
+                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                            <td class="py-4 px-6 text-center">{{ item.notification.notification_id }}</td>
+                            <td class="py-4 px-6 text-center">{{ item.notification.title }}</td>
+                            <td class="py-4 px-6 text-center">{{ item.notification.message|truncatewords:20 }}</td>
+                            <td class="py-4 px-6 text-center">{{ item.notification.sender.full_name }}</td>
+                            <td class="py-4 px-6 text-center">
+                                {% if item.notification.receiver %}
+                                    {{ item.notification.receiver.full_name }}
+                                {% else %}
+                                    {% trans "Hệ thống" %}
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6 text-center">{{ item.notification.created_at|date:"d/m/Y H:i" }}</td>
+                            <td class="py-4 px-6 text-center">
+                                <span class="{{ item.status_color }}">{{ item.status_display }}</span>
+                            </td>
+                            <td class="py-4 px-6 text-center">
+                                {% if item.notification.status == 'unread' %}
+                                    <form method="post" action="{% url 'appartment:mark_notification_read' item.notification.notification_id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">{% trans "Đánh dấu đã đọc" %}</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="py-4 px-6 text-center text-gray-600">{% trans "Chưa có thông báo nào." %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Phân trang -->
+        {% if notifications.has_other_pages %}
+            <div class="mt-4 flex justify-center">
+                <nav class="inline-flex rounded-md shadow">
+                    {% if notifications.has_previous %}
+                        <a href="?page={{ notifications.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Trước" %}</a>
+                    {% endif %}
+                    {% for num in notifications.paginator.page_range %}
+                        {% if notifications.number == num %}
+                            <span class="px-3 py-2 border border-gray-300 bg-blue-600 text-white">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if notifications.has_next %}
+                        <a href="?page={{ notifications.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Tiếp" %}</a>
+                    {% endif %}
+                </nav>
+            </div>
         {% endif %}
     </div>
 </div>
+{% endblock %}

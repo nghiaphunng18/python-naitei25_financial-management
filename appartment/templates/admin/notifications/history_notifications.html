@@ -1,4 +1,4 @@
-{% extends "base_manager.html" %}
+{% extends "base_admin.html" %}
 {% load i18n %}
 {% block content %}
 <div class="p-6 bg-gray-50 min-h-screen">
@@ -30,10 +30,9 @@
                     <label class="block text-gray-700">{% trans "Loại thông báo" %}</label>
                     <select name="filter_type" class="w-full p-2 border rounded">
                         <option value="all" {% if filter_type == 'all' %}selected{% endif %}>{% trans "Tất cả" %}</option>
+                        <option value="to_admin" {% if filter_type == 'to_admin' %}selected{% endif %}>{% trans "Gửi đến tôi" %}</option>
+                        <option value="by_admin" {% if filter_type == 'by_admin' %}selected{% endif %}>{% trans "Do tôi gửi" %}</option>
                         <option value="from_resident" {% if filter_type == 'from_resident' %}selected{% endif %}>{% trans "Từ người thuê" %}</option>
-                        <option value="from_admin" {% if filter_type == 'from_admin' %}selected{% endif %}>{% trans "Từ admin" %}</option>
-                        <option value="to_manager" {% if filter_type == 'to_manager' %}selected{% endif %}>{% trans "Dành cho bạn" %}</option>
-                        <option value="by_manager" {% if filter_type == 'by_manager' %}selected{% endif %}>{% trans "Do bạn gửi" %}</option>
                     </select>
                 </div>
                 <div>
