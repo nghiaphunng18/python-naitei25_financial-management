@@ -1,4 +1,5 @@
 from django.urls import path
+from appartment.views.admin import admin_user_view
 from appartment.views.auth_views import login_view, logout_view
 from appartment.views.base_views import index
 from appartment.views.dashboard_views import dashboard
@@ -22,6 +23,11 @@ urlpatterns = [
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
     path("dashboard", dashboard, name="dashboard"),
+    path(
+        "my-bill",
+        bill_history_views.resident_bill_history,
+        name="bill_history",
+    ),
     path("create_room", room_views.create_room, name="create_room"),
     path("room_list", room_views.room_list, name="room_list"),
     # manager: manage resident
@@ -58,11 +64,6 @@ urlpatterns = [
         name="room_history",
     ),
     # bill
-    path(
-        "my-bills/",
-        bill_history_views.resident_bill_history,
-        name="bill_history",
-    ),
     path("bills_list", bills_view.bills_list_view.as_view(), name="bills_list"),
     path("bill/create/", bills_view.BillCreateView.as_view(), name="bill_create"),
     path("bill/<str:bill_id>/", bills_view.BillDetailView.as_view(), name="bill"),
@@ -99,4 +100,18 @@ urlpatterns = [
         resident_room_views.room_history,
         name="resident_room_history",
     ),
+    # ADMIN URL
+    path("admin/user/create/", admin_user_view.create_user, name="create_user"),
+    path(
+        "admin/user/update/<str:user_id>",
+        admin_user_view.update_user,
+        name="update_user",
+    ),
+    path("user_list", admin_user_view.user_list, name="user_list"),
+    path(
+        "user/toggle-active/<str:user_id>/",
+        admin_user_view.toggle_active,
+        name="toggle_active",
+    ),
+    path("user/<str:user_id>/delete/", admin_user_view.delete_user, name="delete_user"),
 ]

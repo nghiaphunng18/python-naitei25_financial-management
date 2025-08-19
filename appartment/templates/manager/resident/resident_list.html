@@ -49,16 +49,18 @@
                                 </button>
                         
                                 <button
-                                    onclick="openAssignModal('{{ resident.user_id }}', '{% url 'assign_room' resident.user_id %}')"
+                                    onclick="openAssignModal('{{ resident.user_id|escapejs }}', '{{ assign_room_url|escapejs }}')"
                                     class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors whitespace-nowrap">
                                     {% trans "Gán phòng" %}
                                 </button>
+
                         
                                 <button
-                                    onclick="openLeaveModal('{{ resident.user_id }}', '{% url 'leave_room' resident.user_id %}')"
+                                    onclick="openLeaveModal('{{ resident.user_id|escapejs }}', '{{ leave_room_url|escapejs }}')"
                                     class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors whitespace-nowrap">
                                     {% trans "Rời phòng" %}
                                 </button>
+
                             </div>
                         </td>                        
                     </tr>

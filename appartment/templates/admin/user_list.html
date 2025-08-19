@@ -1,0 +1,111 @@
+{% extends "base_admin.html" %}
+{% load i18n %} 
+{% load static %}
+{% load user_tags %} 
+{% block content %}
+<div class="p-4 bg-white">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold">{% trans "Danh sách tài khoản" %}</h1>
+            <p class="text-gray-600">{% trans "Thêm người mới vào tòa nhà." %}</p>
+        </div>
+        <form method="get" class="flex gap-2">
+            <input type="text" 
+                name="q" 
+                value="{{ q }}" 
+                placeholder="{% trans 'Tìm theo tên, email, số điện thoại, vai trò.' %}" 
+                class="border p-2 rounded-md w-80">
+
+            <button type="submit" 
+                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                <i class="fa-solid fa-search"></i> 
+                <span>{% trans "Tìm" %}</span>
+            </button>
+        </form>
+        <div>
+            <a href="{% url 'create_user'%}"
+                class="flex items-center gap-2 p-2 mr-4 bg-blue-500 text-white rounded-md hover:bg-blue-400 font-semibold">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>{% trans "Thêm tài khoản "%}</span>
+            </a>
+        </div>
+    </div>
+    <div class="p-4">
+    {% if users %}
+        <table class="table-auto w-full ">
+            <thead>
+                <tr class="bg-gray-100 border-collapse rounded-t-2xl border-b border-gray-300">
+                    <th class="px-3 py-2 text-left rounded-tl-2xl">{% trans "ID" %}</th>
+                    <th class="px-3 py-2 text-left">{% trans "Họ và tên" %}</th>
+                    <th class="px-3 py-2 text-left">{% trans "Email" %}</th>
+                    <th class="px-3 py-2 text-left">{% trans "Số điện thoại" %}</th>
+                    <th class="px-3 py-2 text-left">{% trans "Vai trò" %}</th>
+                    <th class="px-3 py-2 text-left rounded-tr-2xl">{% trans "Thao tác " %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr class="hover:bg-gray-50 border-collapse border-b border-gray-300">
+                        <td class="px-3 py-2">{{ user.user_id }}</td>
+                        <td class="px-3 py-2">{{ user.full_name }}</td>
+                        <td class="px-3 py-2">{{ user.email }}</td>
+                        <td class="px-3 py-2">{{ user.phone }}</td>
+                        <td class="px-3 py-2">{{ user.role.role_name }}</td>
+                        <td class="flex px-3 py-2 gap-2">
+                            <div class="flex items-center">
+                                <a href="{% url 'update_user' user.user_id%}"
+                                    class="py-1 px-2 bg-blue-400 text-white rounded-md hover:bg-blue-500">
+                                    <i class="fa-solid fa-pen-to-square text-white"></i>
+                                </a>
+                            </div>
+                            <button onclick="openDeleteModal('{{ user.user_id }}')" 
+                                    class="py-1 px-2 bg-red-400 text-white rounded-md hover:bg-red-500">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <form action="{% url 'toggle_active' user.user_id %}" method="post">
+                                {% csrf_token %}
+                                {% user_status_button user.is_active %}
+                            </form>                       
+                        </td>
+                    </tr>
+                {% endfor %}   
+            </tbody>
+        </table>
+        <!-- Pagination -->
+        <!-- {% render_pagination_simple users 'page' '#top' %} -->
+        {% render_pagination_simple users %}
+    {% else %}
+        <span>{% trans "Không có tài khoản nào." %}</span>
+    {% endif %}
+    </div> 
+</div>
+<!-- Modal -->
+<div id="deleteModal" 
+     class="fixed inset-0 z-50 bg-white/5 backdrop-blur-xs flex items-center justify-center hidden">
+    <div class="bg-red-200 rounded-lg p-6 w-110 shadow-xl">
+        <h2 class="text-xl font-bold mb-4">{% trans "Xác nhận xóa" %}</h2>
+        <p class="font-semibold">{% trans "Bạn có chắc chắn muốn xóa người dùng này không?" %}</p>
+        <span class="text-sm text-red-500 italic">{% trans "Thao tác này sẽ xóa toàn bộ dữ liệu của người dùng trong tòa nhà và không thể hoàn tác." %}</span>
+        <div class="mt-4 flex justify-end gap-3">
+            <button onclick="closeDeleteModal()" 
+                    class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">
+                <i class="fa-solid fa-xmark"></i>
+                <span>{% trans "Hủy" %}</span>
+            </button>
+            <form id="deleteForm" method="POST">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-400">
+                    <i class="fa-solid fa-trash"></i>
+                    <span>{% trans "Xóa" %}</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'js/admin/user_list.js' %}"></script>
+
+{% endblock %}
+
