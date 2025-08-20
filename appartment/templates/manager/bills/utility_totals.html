@@ -1,0 +1,74 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+{% block content %}
+<main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+    <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{% trans "Quản lý Tổng điện/nước Tòa nhà" %}</h1>
+
+    <div class="mt-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">{% trans "Thêm/Cập nhật Tổng của tháng" %}</h2>
+        <form method="post" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            {% csrf_token %}
+            
+            <div class="md:col-span-3">
+                <label for="summary_for_month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Tháng Áp Dụng" %}</label>
+                <input type="text" name="summary_for_month" placeholder="Chọn tháng..." required class="border rounded p-2 w-full md:w-1/3 mt-1 month-picker">
+            </div>
+
+            <div>
+                <label for="total_electricity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Tổng sản lượng điện (kWh)" %}</label>
+                <input type="number" step="0.01" name="total_electricity" required class="border rounded p-2 w-full mt-1">
+            </div>
+            <div>
+                <label for="electricity_cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Tổng tiền điện (VNĐ)" %}</label>
+                <input type="number" step="1" name="electricity_cost" required class="border rounded p-2 w-full mt-1">
+            </div>
+            <div></div> {# Khoảng trống để căn chỉnh #}
+
+            <div>
+                <label for="total_water" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Tổng sản lượng nước (m³)" %}</label>
+                <input type="number" step="0.01" name="total_water" required class="border rounded p-2 w-full mt-1">
+            </div>
+            <div>
+                <label for="water_cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Tổng tiền nước (VNĐ)" %}</label>
+                <input type="number" step="1" name="water_cost" required class="border rounded p-2 w-full mt-1">
+            </div>
+
+            <div class="md:col-span-3 flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-bold">{% trans "Lưu" %}</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">{% trans "Lịch sử đã nhập" %}</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-900/50">
+                    <tr class="border-b">
+                        <th class="text-left py-2 px-3">{% trans "Tháng" %}</th>
+                        <th class="text-left py-2 px-3">{% trans "Tổng điện (kWh)" %}</th>
+                        <th class="text-left py-2 px-3">{% trans "Tổng tiền điện" %}</th>
+                        <th class="text-left py-2 px-3">{% trans "Tổng nước (m³)" %}</th>
+                        <th class="text-left py-2 px-3">{% trans "Tổng tiền nước" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for total in totals %}
+                    <tr class="border-b dark:border-gray-700">
+                        <td class="py-3 px-3 font-medium">{{ total.summary_for_month|date:"m/Y" }}</td>
+                        <td class="py-3 px-3">{{ total.total_electricity }}</td>
+                        <td class="py-3 px-3">{{ total.electricity_cost|floatformat:0 }} VNĐ</td>
+                        <td class="py-3 px-3">{{ total.total_water }}</td>
+                        <td class="py-3 px-3">{{ total.water_cost|floatformat:0 }} VNĐ</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-4 px-3 text-center text-gray-500">{% trans "Chưa có dữ liệu tổng nào được nhập." %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+{% endblock %}

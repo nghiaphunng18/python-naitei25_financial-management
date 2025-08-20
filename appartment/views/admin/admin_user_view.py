@@ -72,26 +72,21 @@ def create_user(request):
 @login_required
 @role_required(UserRole.ADMIN.value)
 def user_list(request):
-    q = request.GET.get("q", "")  # searched word
-
-    users = User.objects.select_related("role").order_by("-created_at")
-
+    q = request.GET.get("q", "")
+    qs = User.objects.select_related("role").order_by("-created_at", "-pk")
     if q:
-        users = users.filter(
+        qs = qs.filter(
             Q(full_name__icontains=q)
             | Q(email__icontains=q)
             | Q(phone__icontains=q)
             | Q(role__role_name__icontains=q)
         )
-
-    paginator = Paginator(users, PaginateNumber.P_SHORT.value)
-    page_number = request.GET.get("page")
-    users_page = paginator.get_page(page_number)
-
+    paginator = Paginator(qs, PaginateNumber.P_SHORT.value)
+    page_obj = paginator.get_page(request.GET.get("page"))
     return render(
         request,
         "admin/user_list.html",
-        {"users": users_page, "q": q},
+        {"users": page_obj, "q": q},
     )
 
 

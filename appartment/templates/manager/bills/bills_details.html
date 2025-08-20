@@ -11,9 +11,9 @@
         </div>
         
         <div class="mt-4 md:mt-0 flex items-center space-x-3">
-            <a href="{% url 'bill_update' bill.bill_id %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+            <!-- <a href="{# url 'bill_update' bill.bill_id #}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
                 {% trans "Sửa Hóa Đơn" %}
-            </a>
+            </a> -->
             
             {% if bill.status != 'paid' and bill.status != 'PAID' %}
                 <form action="{% url 'bill_confirm_payment' bill.bill_id %}" method="post" class="inline-block">
@@ -146,5 +146,11 @@
             </form>
         </div>
     </div>
+
+    <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+            <a href="{% url 'bills_list' %}" class="text-blue-600 hover:underline">
+                &larr; {% trans "Quay lại trang Quản lý Hóa đơn" %}
+            </a>
+        </div>
 </main>
 {% endblock %}

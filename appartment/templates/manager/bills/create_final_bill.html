@@ -1,0 +1,68 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+{% block content %}
+<main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-6">{{ page_title }}</h1>
+
+        <form method="post" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            {% csrf_token %}
+            <div>
+                <label for="room" class="block text-sm font-medium">{% trans "Chọn phòng" %}</label>
+                <select name="room" id="room" required class="border rounded p-2 w-full mt-1">
+                    <option value="">---</option>
+                    {% for room_obj in rooms %}
+                        <option value="{{ room_obj.pk }}" {% if selected_room_id == room_obj.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ room_obj.description }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="month" class="block text-sm font-medium">{% trans "Chọn tháng" %}</label>
+                <input type="text" name="month" value="{{ selected_month_str }}" placeholder="Chọn tháng..." required class="border rounded p-2 w-full mt-1 month-picker">
+            </div>
+            <button type="submit" class="bg-indigo-600 text-white h-11 px-6 rounded-lg hover:bg-indigo-700 font-semibold">
+                {% trans "Kiểm tra điều kiện" %}
+            </button>
+        </form>
+
+        {# KẾT QUẢ KIỂM TRA HIỂN THỊ (CHỈ HIỂN THỊ SAU KHI NHẤN NÚT) #}
+        {% if step == 2 %}
+        <div class="mt-8 pt-6 border-t">
+            <h2 class="text-2xl font-semibold mb-4">{% trans "Kết quả kiểm tra" %}</h2>
+            {% if is_ready %}
+                <div class="p-4 bg-green-100 text-green-800 rounded-lg">
+                    <h3 class="font-bold">{% trans "Đủ điều kiện" %}!</h3>
+                    <p>{% trans "Phòng" %} {{ selected_room_id }} {% trans "đã có đủ 2 hóa đơn nháp được xác nhận cho tháng" %} {{ selected_month_str|slice:":7" }}.</p>
+                    <ul class="list-disc list-inside mt-2 text-sm">
+                        <li>{% trans "HĐ Điện/Nước" %}: {{ ew_draft.total_amount|floatformat:0 }} VNĐ</li>
+                        <li>{% trans "HĐ Dịch vụ" %}: {{ services_draft.total_amount|floatformat:0 }} VNĐ</li>
+                        <li>{% trans "Tiền thuê phòng" %}: {{ rental_price.price|floatformat:0 }} VNĐ</li>
+                        <li class="font-bold mt-1">{% trans "Tổng cộng dự kiến" %}: {{ estimated_total|floatformat:0 }} VNĐ</li>
+                    </ul>
+                </div>
+                <form action="{% url 'generate_final_bill' %}" method="post" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="room_id" value="{{ selected_room_id }}">
+                    <input type="hidden" name="month" value="{{ selected_month_str }}">
+                    <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-bold">
+                        {% trans "Xác nhận & Tạo Hóa đơn Cuối cùng" %}
+                    </button>
+                </form>
+            {% else %}
+                <div class="p-4 bg-red-100 text-red-800 rounded-lg">
+                    <h3 class="font-bold">{% trans "Chưa đủ điều kiện" %}!</h3>
+                    <p>{% trans "Vui lòng đảm bảo cả hai hóa đơn Điện/Nước và Dịch vụ cho phòng và tháng này đều đã được cư dân xác nhận" %}.</p>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+            <a href="{% url 'bills_list' %}" class="text-blue-600 hover:underline">
+                &larr; {% trans "Quay lại trang Quản lý Hóa đơn" %}
+            </a>
+        </div>
+    </div>
+</main>
+{% endblock %}

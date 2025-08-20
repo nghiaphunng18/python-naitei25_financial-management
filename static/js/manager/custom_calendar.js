@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Tìm tất cả các input có class 'month-picker'
+    // Tìm các input có class 'month-picker'
     flatpickr(".month-picker", {
         // Kích hoạt plugin chọn tháng
         plugins: [

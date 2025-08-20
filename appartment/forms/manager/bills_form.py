@@ -1,5 +1,6 @@
 from django import forms
 from appartment.models.bills import Bill
+from ...models import Room, AdditionalService
 
 
 class BillForm(forms.ModelForm):
@@ -33,15 +34,33 @@ class BillForm(forms.ModelForm):
             # Thêm class chung cho tất cả
             field.widget.attrs.update({"class": text_input_class})
 
-        # Tùy chỉnh riêng cho các trường đặc biệt nếu cần
-        # Ví dụ: thay đổi widget cho bill_month và due_date
+        # Tùy chỉnh riêng cho các trường đặc biệt
         self.fields["bill_month"].widget = forms.DateInput(
             attrs={
-                "type": "text",  # Đổi thành text để tránh xung đột với picker mặc định
-                "class": f"{text_input_class} month-picker",  # Thêm class mới
+                "type": "text",
+                "class": f"{text_input_class} month-picker",
                 "placeholder": "Chọn tháng và năm",
             }
         )
         self.fields["due_date"].widget = forms.DateInput(
             attrs={"type": "date", "class": text_input_class}
         )
+
+
+class AdhocServiceForm(forms.Form):
+    room = forms.ModelChoiceField(
+        queryset=Room.objects.all(),
+        label="Chọn phòng",
+        widget=forms.Select(attrs={"class": "border rounded p-2 w-full mt-1"}),
+    )
+    service = forms.ModelChoiceField(
+        queryset=AdditionalService.objects.all(),
+        label="Chọn dịch vụ",
+        widget=forms.Select(attrs={"class": "border rounded p-2 w-full mt-1"}),
+    )
+    bill_month = forms.CharField(
+        label="Tháng áp dụng",
+        widget=forms.TextInput(
+            attrs={"type": "month", "class": "border rounded p-2 w-full mt-1"}
+        ),
+    )
