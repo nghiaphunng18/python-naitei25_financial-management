@@ -32,7 +32,6 @@
         <span>{% trans "Quản lý yêu cầu" %}</span>
       </a>
     </li>
-
     {% with request.resolver_match.url_name as current_url %}
     <li class="w-full {% if current_url in 'resident_notification_history' %}bg-gray-500{% endif %} hover:bg-gray-500">
     {% endwith %}

@@ -53,7 +53,7 @@ def get_room_history(request, room_id):
         current += relativedelta(months=1)
     month_list.reverse()
 
-    prices = RentalPrice.objects.filter(room_id=room_id).order_by("effective_date")
+    prices = RentalPrice.objects.filter(room_id=room_id).order_by("-effective_date")
 
     residents = RoomResident.objects.filter(room_id=room_id).select_related("user")
 
@@ -61,13 +61,13 @@ def get_room_history(request, room_id):
 
     for month_start in month_list:
         month_end = (month_start + relativedelta(months=1)) - timedelta(days=1)
-
         price_in_month = None
-        for p in prices:
-            if p.effective_date.date() <= month_end:
-                price_in_month = p.price
-            else:
-                break
+        price_in_month = (
+            prices.filter(effective_date__date__lte=month_end)
+                .order_by("-effective_date")
+                .first()
+        )
+        price_in_month = price_in_month.price if price_in_month else None
 
         users_in_month = [
             {"full_name": res.user.full_name, "user_id": res.user.user_id}
@@ -78,7 +78,7 @@ def get_room_history(request, room_id):
 
         history.append(
             {
-                "month": month_start.strftime(MONTH_YEAR_FORMAT),
+                "month": month_start,
                 "number_of_residents": len(users_in_month),
                 "residents": users_in_month,
                 "price": price_in_month,
@@ -89,7 +89,7 @@ def get_room_history(request, room_id):
     price_changes = [
         {
             "price": p.price,
-            "effective_date": p.effective_date.strftime(DAY_MONTH_YEAR_FORMAT),
+            "effective_date": p.effective_date,
         }
         for p in prices
     ]

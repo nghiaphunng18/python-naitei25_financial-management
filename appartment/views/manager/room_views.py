@@ -6,9 +6,11 @@ from django.views.decorators.http import require_http_methods
 from django.utils.translation import gettext_lazy as _
 
 from appartment.constants import UserRole
+from appartment.models.rental_prices import RentalPrice
 from ...forms.manager.room_forms import CreateRoomForm, UpdateRoomForm
 from ...models import Room, RoomResident
 from ...utils.permissions import role_required, staff_required
+from ...forms.manager.rental_price_form import RentalPriceCreateForm
 
 
 @login_required
@@ -63,6 +65,8 @@ def room_detail(request, room_id):
     # Lấy thông tin phòng
     room = get_object_or_404(Room, room_id=room_id)
 
+    rental_prices = RentalPrice.objects.filter(room=room).order_by("-effective_date")
+
     # Lấy danh sách người đang ở hiện tại (move_out_date = NULL)
     current_residents = (
         RoomResident.objects.filter(room=room, move_out_date__isnull=True)
@@ -86,6 +90,7 @@ def room_detail(request, room_id):
         else 0
     )
 
+    rental_price_form = RentalPriceCreateForm()
     context = {
         "room": room,
         "current_residents": current_residents,
@@ -95,6 +100,8 @@ def room_detail(request, room_id):
         "occupancy_rate": round(occupancy_rate, 1),
         "available_spots": room.max_occupants - current_occupants_count,
         "page_title": _("Chi tiết phòng %(room_id)s") % {"room_id": room.room_id},
+        "rental_prices": rental_prices,
+        "rental_price_form": rental_price_form
     }
 
     return render(request, "manager/rooms/room_detail.html", context)

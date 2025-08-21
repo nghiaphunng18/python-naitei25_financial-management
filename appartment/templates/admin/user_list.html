@@ -58,8 +58,13 @@
                                     <i class="fa-solid fa-pen-to-square text-white"></i>
                                 </a>
                             </div>
-                            <button onclick="openDeleteModal('{{ user.user_id }}')" 
-                                    class="py-1 px-2 bg-red-400 text-white rounded-md hover:bg-red-500">
+                            {% url 'delete_user' user.user_id as del_url %}
+
+                            <button
+                                type="button"
+                                data-delete-url="{{ del_url }}"
+                                onclick="openDeleteModal(this.dataset.deleteUrl)"
+                                class="py-1 px-2 bg-red-400 text-white rounded-md hover:bg-red-500">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                             <form action="{% url 'toggle_active' user.user_id %}" method="post">
@@ -72,7 +77,6 @@
             </tbody>
         </table>
         <!-- Pagination -->
-        <!-- {% render_pagination_simple users 'page' '#top' %} -->
         {% render_pagination_simple users %}
     {% else %}
         <span>{% trans "Không có tài khoản nào." %}</span>

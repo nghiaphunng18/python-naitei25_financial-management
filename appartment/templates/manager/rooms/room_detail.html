@@ -1,9 +1,10 @@
 {% extends "base_manager.html" %}
 {% load i18n %}
 {% load static %}
-{% block content %}
+{% load humanize %}
 {% load custom_filters %}
-
+{% load room_tags %}
+{% block content %}
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
@@ -17,32 +18,18 @@
             </div>
             <div class="flex space-x-3">
                 <a href="{% url 'room_update' room.room_id %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-5 h-5 mr-2" fill="currentColor">
-                    <path d="M362.7 19.31c24.96-24.96 65.47-24.96 90.42 0l39.56 39.56c24.96 24.96 24.96 65.47 0 90.42l-43 43L319.7 62.31l43-43zM295.8 86.18L25.34 356.7 0 512l155.3-25.34 270.5-270.5-129.9-129.9z"/>
-                    </svg>
+                    <i class="fas fa-edit mr-1"></i>
                     {% trans "Chỉnh sửa" %}
                 </a>
-                <a href="{% url 'room_list' %}" class="inline-flex items-center px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" 
-                        viewBox="0 0 448 512" 
-                        class="w-5 h-5 mr-2"
-                        fill="currentColor">
-                    <path d="M257.5 445.1c12.5-12.5 12.5-32.8 0-45.3L147.3 288H424c17.7
-                    0 32-14.3 32-32s-14.3-32-32-32H147.3L257.5 112.1c12.5-12.5
-                    12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160c-12.5
-                    12.5-12.5 32.8 0 45.3l160 160c12.5
-                    12.5 32.8 12.5 45.3 0z"/>
-                    </svg>
-                    {% trans "Quay lại" %}
-                </a>
+                <!-- Open Modal Button -->
+                <button onclick="openPriceModal()" 
+                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                    <i class="fas fa-dollar-sign mr-1"></i> Quản lý giá phòng
+                </button>
+                {% back_link 'room_list' %}
                 <a href="{% url 'room_history' room.room_id %}" 
                     class="relative group inline-flex items-center justify-center px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" 
-                        viewBox="0 0 640 640"
-                        class="w-5 h-5 pointer-events-none"
-                        fill="currentColor">
-                        <path d="M320 128C426 128 512 214 512 320C512 426 426 512 320 512C254.8 512 197.1 479.5 162.4 429.7C152.3 415.2 132.3 411.7 117.8 421.8C103.3 431.9 99.8 451.9 109.9 466.4C156.1 532.6 233 576 320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C234.3 64 158.5 106.1 112 170.7L112 144C112 126.3 97.7 112 80 112C62.3 112 48 126.3 48 144L48 256C48 273.7 62.3 288 80 288L104.6 288C105.1 288 105.6 288 106.1 288L192.1 288C209.8 288 224.1 273.7 224.1 256C224.1 238.3 209.8 224 192.1 224L153.8 224C186.9 166.6 249 128 320 128zM344 216C344 202.7 333.3 192 320 192C306.7 192 296 202.7 296 216L296 320C296 326.4 298.5 332.5 303 337L375 409C384.4 418.4 399.6 418.4 408.9 409C418.2 399.6 418.3 384.4 408.9 375.1L343.9 310.1L343.9 216z"/>
-                    </svg>
+                    <i class="fa-solid fa-clock-rotate-left"></i>
                     <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition duration-200 whitespace-nowrap z-50">
                         {% trans "Lịch sử phòng"%}
                     </span>
@@ -254,6 +241,141 @@
             </div>
         </div>
     </div>
+    <!-- Modal -->
+    <div id="priceModal" class="fixed inset-0 hidden bg-white/5 backdrop-blur-xs flex items-center justify-center z-50">
+    <div class="bg-blue-100 w-auto rounded-lg shadow-2xl p-6">
+        <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">{% trans "Quản lý giá phòng" %}</h2>
+        <button onclick="closePriceModal()" class="text-gray-600 hover:text-gray-900">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        </div>
+
+        <!-- Phần 1: Create rental price form -->
+        <div class="mb-6">
+            <h3 class="text-lg font-bold mb-2">{% trans "Thêm giá mới" %}</h3>
+            <form method="post" action="{% url 'rental_price_create' room.room_id %}" class="flex space-x-3 items-center">
+                {% csrf_token %}
+                <div>
+                    {{ rental_price_form.effective_date }}
+                    {% if rental_price_form.effective_date.errors %}
+                        <p class="text-red-500 text-sm mt-1">
+                            {{ rental_price_form.effective_date.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ rental_price_form.price }}
+                    {% if rental_price_form.price.errors %}
+                        <p class="text-red-500 text-sm mt-1">
+                            {{ rental_price_form.price.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+                <button type="submit"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    {% trans "Thêm" %}
+                </button>
+            </form>
+        </div>
+        
+        <!-- Phần 2: History rental price with edit and delete -->
+        <h3 class="text-lg font-bold mb-2">{% trans "Lịch sử giá phòng" %}</h3>
+        {% if rental_prices %}
+        <table class="min-w-full border ">
+            <thead>
+                <tr class="bg-gray-100">
+                <th class="py-2">{% trans "Ngày hiệu lực" %}</th>
+                <th class="py-2">{% trans "Giá (VNĐ)" %}</th>
+                <th class="py-2">{% trans "Hành động" %}</th>
+                </tr>
+            </thead>
+            <tbody class="text-center">
+                {% for price in rental_prices %}
+                <tr id="row-{{ price.rental_price_id }}" 
+                    data-old-date="{{ price.effective_date|date:'Y-m-d' }}"
+                    data-old-price="{{ price.price }}">
+
+                    <!-- Date -->
+                    <td class="px-4 py-2">
+                        <span id="date-text-{{ price.rental_price_id }}">{{ price.effective_date|date:"d/m/y" }}</span>
+                        <!-- Hide input -->
+                        <input class="hidden border border-blue-300 p-2 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            type="date"
+                            name="effective_date"
+                            value="{{ price.effective_date|date:'Y-m-d' }}"
+                            form="form-update-{{ price.rental_price_id }}"
+                            id="date-input-{{ price.rental_price_id }}">
+                    </td>
+
+                    <!-- Price -->
+                    <td class="px-4 py-2">
+                        <span id="value-text-{{ price.rental_price_id }}">{{ price.price|intcomma }}</span>
+                        <input class="hidden border border-blue-300 p-2 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            type="number"
+                            step="10000"
+                            min="0"
+                            name="price"
+                            value="{{ price.price }}"
+                            form="form-update-{{ price.rental_price_id }}"
+                            id="value-input-{{ price.rental_price_id }}">
+                    </td>
+
+                    <!-- Activity -->
+                    <td class="px-4 py-2 text-center space-x-2">
+                        <!-- Edit Button -->
+                        <button type="button"
+                                class="text-blue-600"
+                                onclick="startEdit('{{ price.rental_price_id }}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+
+                        <!-- Save Button: submit form update -->
+                        <button type="submit"
+                                class="hidden text-green-600"
+                                form="form-update-{{ price.rental_price_id }}"
+                                id="save-btn-{{ price.rental_price_id }}">
+                            <i class="fas fa-check"></i>
+                        </button>
+
+                        <!-- Cancel Button: Hide input, display span -->
+                        <button type="button"
+                                class="hidden text-gray-600"
+                                id="cancel-btn-{{ price.rental_price_id }}"
+                                onclick="cancelEdit('{{ price.rental_price_id }}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+
+                        <!-- Form update -->
+                        <form id="form-update-{{ price.rental_price_id }}"
+                            method="post"
+                            action="{% url 'rental_price_update' price.rental_price_id %}"
+                            class="hidden">
+                        {% csrf_token %}
+                        </form>
+
+                        <!-- Form delete -->
+                        <form method="post"
+                            action="{% url 'rental_price_delete' price.rental_price_id %}"
+                            class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600"
+                                    onclick="return confirm('Xóa giá phòng này?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <span class="italic">{% trans "Không có lịch sử thay đổi giá phòng." %}</span>
+        {% endif %}
+    </div>
+    </div>
     <script src="{% static 'js/room_detail.js' %}"></script>
+    <script src="{% static 'js/manager/rental_room.js' %}"></script>
 </body>
 {% endblock %}

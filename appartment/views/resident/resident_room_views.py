@@ -216,12 +216,12 @@ def room_history(request, room_id):
     for month_start in month_list:
         month_end = (month_start + relativedelta(months=1)) - timedelta(days=1)
 
-        price_in_month = None
-        for p in prices:
-            if p.effective_date.date() <= month_end:
-                price_in_month = p.price
-            else:
-                break
+        price_obj = (
+            RentalPrice.objects.filter(room_id=room_id, effective_date__lte=month_end)
+            .order_by("-effective_date")
+            .first()
+        )
+        price_in_month = price_obj.price if price_obj else None
 
         users_in_month = [
             {"full_name": res.user.full_name, "user_id": res.user.user_id}
