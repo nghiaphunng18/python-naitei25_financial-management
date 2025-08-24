@@ -1,0 +1,11 @@
+{% load i18n %}
+{% load static %}
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center">
+  <div class="bg-white w-2/5 p-6 rounded-xl">
+    <h1 class="text-2xl font-bold text-center pb-4">{% trans "Cập nhật tài khoản" %}</h1>
+    {% url 'user_list' as cancel_url %}
+    {% url 'update_user' user_id as action_url %}
+    {% include "admin/partials/user_form.html" with button_text="Cập nhật" button_color="bg-green-600" button_icon="fa-regular fa-floppy-disk" action_url=action_url cancel_url=cancel_url cancel_action="closeModalForm('modal_update_user')" cancel_text="Hủy" cancel_icon="fas fa-times" cancel_color="bg-gray-400" %}
+  </div>
+</div>
+<script src="{% static 'js/admin/user_list.js' %}"></script>

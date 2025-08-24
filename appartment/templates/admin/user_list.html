@@ -23,12 +23,17 @@
             </button>
         </form>
         <div>
-            <a href="{% url 'create_user'%}"
-                class="flex items-center gap-2 p-2 mr-4 bg-blue-500 text-white rounded-md hover:bg-blue-400 font-semibold">
+            <button 
+                class="flex items-center gap-2 p-2 mr-4 bg-blue-500 text-white rounded-md hover:bg-blue-400 font-semibold"
+                hx-get="{% url 'create_user' %}" 
+                hx-target="#modal_create_user"
+                hx-trigger="click">
                 <i class="fa-solid fa-user-plus"></i>
                 <span>{% trans "Thêm tài khoản "%}</span>
-            </a>
+            </button>
         </div>
+        <!-- modal -->
+        <div id="modal_create_user"></div>
     </div>
     <div class="p-4">
     {% if users %}
@@ -53,11 +58,17 @@
                         <td class="px-3 py-2">{{ user.role.role_name }}</td>
                         <td class="flex px-3 py-2 gap-2">
                             <div class="flex items-center">
-                                <a href="{% url 'update_user' user.user_id%}"
-                                    class="py-1 px-2 bg-blue-400 text-white rounded-md hover:bg-blue-500">
+                                <button 
+                                    class="py-1 px-2 bg-blue-400 text-white rounded-md hover:bg-blue-500"
+                                    hx-get="{% url 'update_user' user.user_id%}" 
+                                    hx-target="#modal_update_user"
+                                    hx-trigger="click">
                                     <i class="fa-solid fa-pen-to-square text-white"></i>
-                                </a>
+                                </button>
                             </div>
+                            <!-- modal -->
+                            <div id="modal_update_user"></div>
+
                             {% url 'delete_user' user.user_id as del_url %}
 
                             <button
