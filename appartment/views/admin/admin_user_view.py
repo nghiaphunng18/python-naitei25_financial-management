@@ -1,15 +1,39 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.db.models import Max
 
 from appartment.constants import UserRole
 from appartment.utils.permissions import role_required
 from ...models import Province, District, Ward, User
 from ...forms.admin.user_form import UserCreateForm, UserUpdateForm
-from ...constants import PaginateNumber
+from ...constants import PaginateNumber, StringLength
+
+
+def generate_user_id():
+    max_length = StringLength.SHORT.value
+
+    all_ids = User.objects.values_list("user_id", flat=True)
+    numeric_ids = []
+
+    for uid in all_ids:
+        try:
+            numeric_ids.append(int(uid))
+        except (ValueError, TypeError):
+            continue
+
+    last_num = max(numeric_ids) if numeric_ids else 0
+    new_num = last_num + 1
+    new_id = str(new_num)
+
+    if len(new_id) > max_length:
+        raise ValueError(_("Không thể sinh thêm user_id vì đã đạt giới hạn độ dài."))
+
+    return new_id
 
 
 @login_required
@@ -19,25 +43,6 @@ def create_user(request):
         form = UserCreateForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-
-            # If exist province return object else create new object
-            province = Province.objects.get_or_create(
-                province_name=data["province_name"], province_code=data["province_code"]
-            )[0]
-
-            # #If exist district return object else create new object
-            district = District.objects.get_or_create(
-                district_name=data["district_name"],
-                district_code=data["district_code"],
-                province=province,
-            )[0]
-
-            # If exist ward return object else create new object
-            ward = Ward.objects.get_or_create(
-                ward_name=data["ward_name"],
-                ward_code=data["ward_code"],
-                district=district,
-            )[0]
 
             # Set default password = user_id + phone
             raw_password = f"{data['user_id']}{data['phone']}"
@@ -50,9 +55,9 @@ def create_user(request):
                 full_name=data["full_name"],
                 phone=data["phone"],
                 role=data["role"],
-                province=province,
-                district=district,
-                ward=ward,
+                province=data["province"],
+                district=data["district"],
+                ward=data["ward"],
                 detail_address=data["detail_address"],
                 is_active=(data["status"] == "True"),
             )
@@ -64,16 +69,24 @@ def create_user(request):
             )
             return redirect("user_list")
     else:
-        form = UserCreateForm()
+        new_user_id = generate_user_id()
+        form = UserCreateForm(initial={"user_id": new_user_id})
 
-    return render(request, "admin/user_create.html", {"form": form})
+    return render(
+        request,
+        "admin/partials/user_create.html",{"form": form,},
+    )
 
 
 @login_required
 @role_required(UserRole.ADMIN.value)
 def user_list(request):
     q = request.GET.get("q", "")
-    qs = User.objects.select_related("role").order_by("-created_at", "-pk")
+    qs = (
+        User.objects.select_related("role")
+        .filter(is_deleted=False)
+        .order_by("-created_at", "-pk")
+    )
     if q:
         qs = qs.filter(
             Q(full_name__icontains=q)
@@ -94,9 +107,7 @@ def user_list(request):
 @role_required(UserRole.ADMIN.value)
 def update_user(request, user_id):
     try:
-        user = User.objects.select_related("province", "district", "ward").get(
-            user_id=user_id
-        )
+        user = User.objects.get(user_id=user_id)
     except User.DoesNotExist:
         messages.error(
             request, _("Người dùng với ID %(id)s không tồn tại.") % {"id": user_id}
@@ -109,34 +120,15 @@ def update_user(request, user_id):
         if form.is_valid():
             data = form.cleaned_data
 
-            # Update province
-            province = Province.objects.get_or_create(
-                province_name=data["province_name"], province_code=data["province_code"]
-            )[0]
-
-            # Update district
-            district = District.objects.get_or_create(
-                district_name=data["district_name"],
-                district_code=data["district_code"],
-                province=province,
-            )[0]
-
-            # Update ward
-            ward = Ward.objects.get_or_create(
-                ward_name=data["ward_name"],
-                ward_code=data["ward_code"],
-                district=district,
-            )[0]
-
             # Update user
             user.full_name = data["full_name"]
             user.email = data["email"]
             user.phone = data["phone"]
             user.detail_address = data["detail_address"]
             user.role = data["role"]
-            user.province = province
-            user.district = district
-            user.ward = ward
+            user.province = data["province"]
+            user.district = data["district"]
+            user.ward = data["ward"]
             user.is_active = data["status"] == "True"
             user.save()
 
@@ -158,16 +150,17 @@ def update_user(request, user_id):
                 "detail_address": user.detail_address,
                 "role": user.role,
                 "status": str(user.is_active),
-                "province_name": user.province.province_name if user.province else "",
-                "province_code": user.province.province_code if user.province else "",
-                "district_name": user.district.district_name if user.district else "",
-                "district_code": user.district.district_code if user.district else "",
-                "ward_name": user.ward.ward_name if user.ward else "",
-                "ward_code": user.ward.ward_code if user.ward else "",
+                "province": user.province,
+                "district": user.district,
+                "ward": user.ward,
             }
         )
 
-    return render(request, "admin/user_update.html", {"form": form})
+    return render(
+        request,
+        "admin/partials/user_update.html",
+        {"form": form, "user_id": user.user_id},
+    )
 
 
 @login_required
@@ -183,7 +176,10 @@ def delete_user(request, user_id):
         return redirect("user_list")
 
     if request.method == "POST":
-        user.delete()
+        user.is_deleted = True
+        user.is_active = False
+        user.save(update_fields=["is_deleted", "is_active"])
+
         messages.success(
             request,
             _("Đã xóa người dùng %(full_name)s thành công.")
@@ -223,3 +219,29 @@ def toggle_active(request, user_id):
                 % {"full_name": user.full_name},
             )
     return redirect("user_list")
+
+
+@login_required
+@role_required(UserRole.ADMIN.value)
+def load_districts(request):
+    province_id = request.GET.get("province")
+    districts = District.objects.filter(province_id=province_id).order_by(
+        "district_name"
+    )
+    return render(
+        request,
+        "admin/partials/district_options.html",
+        {"districts": districts},
+    )
+
+
+@login_required
+@role_required(UserRole.ADMIN.value)
+def load_wards(request):
+    district_id = request.GET.get("district")
+    wards = Ward.objects.filter(district_id=district_id).order_by("ward_name")
+    return render(
+        request,
+        "admin/partials/ward_options.html",
+        {"wards": wards},
+    )

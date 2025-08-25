@@ -162,6 +162,11 @@ urlpatterns = [
         name="delete_user",
     ),
     path(
+        "admin/load_districts/", admin_user_view.load_districts, name="load_districts"
+    ),
+    path("admin/load_wards/", admin_user_view.load_wards, name="load_wards"),
+    # ADMIN notification
+    path(
         "admin/notification/",
         admin_notification_history,
         name="admin_notification_history",
