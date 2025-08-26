@@ -13,6 +13,49 @@
             {% endfor %}
         </div>
     {% endif %}
+
+    <!-- Form lọc và tìm kiếm -->
+    <div class="max-w-full mx-auto mb-6 bg-white p-4 rounded-lg shadow-md">
+        <form method="get" class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-gray-700">{% trans "Sắp xếp" %}</label>
+                    <select name="sort_by" class="w-full p-2 border rounded">
+                        <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>{% trans "Tên (A-Z)" %}</option>
+                        <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>{% trans "Tên (Z-A)" %}</option>
+                        <option value="email_asc" {% if sort_by == 'email_asc' %}selected{% endif %}>{% trans "Email (A-Z)" %}</option>
+                        <option value="email_desc" {% if sort_by == 'email_desc' %}selected{% endif %}>{% trans "Email (Z-A)" %}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700">{% trans "Trạng thái phòng" %}</label>
+                    <select name="filter_status" class="w-full p-2 border rounded">
+                        <option value="all" {% if filter_status == 'all' %}selected{% endif %}>{% trans "Tất cả" %}</option>
+                        <option value="no_room" {% if filter_status == 'no_room' %}selected{% endif %}>{% trans "Chưa có phòng" %}</option>
+                        <option value="in_room" {% if filter_status == 'in_room' %}selected{% endif %}>{% trans "Đang ở phòng" %}</option>
+                        <option value="left_room" {% if filter_status == 'left_room' %}selected{% endif %}>{% trans "Đã từng rời" %}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700">{% trans "Trạng thái hoạt động" %}</label>
+                    <select name="filter_active" class="w-full p-2 border rounded">
+                        <option value="all" {% if filter_active == 'all' %}selected{% endif %}>{% trans "Tất cả" %}</option>
+                        <option value="active" {% if filter_active == 'active' %}selected{% endif %}>{% trans "Hoạt động" %}</option>
+                        <option value="inactive" {% if filter_active == 'inactive' %}selected{% endif %}>{% trans "Không hoạt động" %}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700">{% trans "Tìm kiếm" %}</label>
+                    <input type="text" name="search_query" value="{{ search_query }}" placeholder="{% trans 'Tìm theo tên, email, số điện thoại' %}" class="w-full p-2 border rounded">
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">{% trans "Áp dụng" %}</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bảng danh sách cư dân -->
     <div class="max-w-full mx-auto">
         <div class="overflow-x-auto shadow-md rounded-lg">
             <table class="min-w-full bg-white border border-gray-200">
@@ -24,11 +67,12 @@
                         <th class="py-4 px-6 text-center font-semibold">{% trans "Số điện thoại" %}</th>
                         <th class="py-4 px-6 text-center font-semibold">{% trans "Địa chỉ" %}</th>
                         <th class="py-4 px-6 text-center font-semibold">{% trans "Phòng hiện tại" %}</th>
+                        <th class="py-4 px-6 text-center font-semibold">{% trans "Trạng thái" %}</th>
                         <th class="py-4 px-6 text-center font-semibold">{% trans "Hành động" %}</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for resident in residents %}
+                    {% for resident in resident_data %}
                     <tr class="border-b border-b-3 hover:bg-gray-50 transition-colors">
                         <td class="py-4 px-6 text-center">{{ resident.user_id }}</td>
                         <td class="py-4 px-6 text-center">{{ resident.full_name }}</td>
@@ -37,83 +81,108 @@
                         <td class="py-4 px-6 text-center">{{ resident.address }}</td>
                         <td class="py-4 px-6 text-center">{{ resident.room_id }}</td>
                         <td class="py-4 px-6 text-center">
+                            {% if resident.is_active %}
+                                <span class="text-green-600">{% trans "Hoạt động" %}</span>
+                            {% else %}
+                                <span class="text-red-600">{% trans "Không hoạt động" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-center">
                             <div class="flex items-center justify-center gap-2 whitespace-nowrap">
                                 <button
                                     onclick="toggleDropdown('{{ resident.user_id }}')"
                                     data-state="closed"
                                     id="detail-btn-{{ resident.user_id }}"
-                                    data-open-text="{{ _('Thu gọn') }}"
-                                    data-close-text="{{ _('Chi tiết') }}"
+                                    data-open-text="{% trans 'Thu gọn' %}"
+                                    data-close-text="{% trans 'Chi tiết' %}"
                                     class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap">
                                     {% trans "Chi tiết" %}
                                 </button>
-                        
                                 <button
                                     onclick="openAssignModal('{{ resident.user_id|escapejs }}', '{% url 'assign_room' resident.user_id %}')"
                                     class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors whitespace-nowrap">
                                     {% trans "Gán phòng" %}
                                 </button>
-
                                 <button
                                     onclick="openLeaveModal('{{ resident.user_id|escapejs }}', '{% url 'leave_room' resident.user_id %}')"
                                     class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors whitespace-nowrap">
                                     {% trans "Rời phòng" %}
                                 </button>
                             </div>
-                        </td>                        
+                        </td>
                     </tr>
-
-                        <tr id="dropdown-{{ resident.user_id }}" class="hidden opacity-0 -translate-y-4 transition-all duration-300">
-                            <td colspan="7" class="p-6 bg-gray-100">
-                                <h3 class="text-lg font-semibold text-gray-700 mb-3">{% trans "Lịch sử phòng" %}</h3>
-                                {% if resident.history %}
-                                    <div class="shadow-sm rounded-lg overflow-hidden">
-                                        <table class="min-w-full border border-gray-200">
-                                            <thead class="bg-gray-200">
-                                                <tr class="text-sm text-gray-600">
-                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Phòng" %}</th>
-                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Ngày vào" %}</th>
-                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Ngày ra" %}</th>
-                                                    <th class="py-3 px-4 text-center font-medium">{% trans "Trạng thái" %}</th>
+                    <tr id="dropdown-{{ resident.user_id }}" class="hidden opacity-0 -translate-y-4 transition-all duration-300">
+                        <td colspan="8" class="p-6 bg-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-3">{% trans "Lịch sử phòng" %}</h3>
+                            {% if resident.history %}
+                                <div class="shadow-sm rounded-lg overflow-hidden">
+                                    <table class="min-w-full border border-gray-200">
+                                        <thead class="bg-gray-200">
+                                            <tr class="text-sm text-gray-600">
+                                                <th class="py-3 px-4 text-center font-medium">{% trans "Phòng" %}</th>
+                                                <th class="py-3 px-4 text-center font-medium">{% trans "Ngày vào" %}</th>
+                                                <th class="py-3 px-4 text-center font-medium">{% trans "Ngày ra" %}</th>
+                                                <th class="py-3 px-4 text-center font-medium">{% trans "Trạng thái" %}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for record in resident.history %}
+                                                <tr class="border-b border-b-2 hover:bg-gray-50 {% if not record.move_out_date %}bg-yellow-100 font-bold hover:bg-yellow-200{% endif %}">
+                                                    <td class="py-3 px-4 text-center">{{ record.room.room_id }}</td>
+                                                    <td class="py-3 px-4 text-center">{{ record.move_in_date|date:"d/m/Y" }}</td>
+                                                    <td class="py-3 px-4 text-center">
+                                                        {% if record.move_out_date %}
+                                                            {{ record.move_out_date|date:"d/m/Y" }}
+                                                        {% else %}
+                                                            {% trans "Đang ở" %}
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="py-3 px-4 text-center">
+                                                        {% if record.move_out_date %}
+                                                            {% trans "Đã rời" %}
+                                                        {% else %}
+                                                            {% trans "Đang ở" %}
+                                                        {% endif %}
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for record in resident.history %}
-                                                    <tr class="border-b border-b-2 hover:bg-gray-50">
-                                                        <td class="py-3 px-4 text-center">{{ record.room.room_id }}</td>
-                                                        <td class="py-3 px-4 text-center">{{ record.move_in_date|date:"d/m/Y" }}</td>
-                                                        <td class="py-3 px-4 text-center">
-                                                            {% if record.move_out_date %}
-                                                                {{ record.move_out_date|date:"d/m/Y" }}
-                                                            {% else %}
-                                                                {% trans "Đang ở" %}
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="py-3 px-4 text-center">
-                                                            {% if record.move_out_date %}
-                                                                {% trans "Đã rời" %}
-                                                            {% else %}
-                                                                {% trans "Đang ở" %}
-                                                            {% endif %}
-                                                        </td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                {% else %}
-                                    <p class="text-gray-600">{% trans "Chưa có lịch sử phòng." %}</p>
-                                {% endif %}
-                            </td>
-                        </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-gray-600">{% trans "Chưa có lịch sử phòng." %}</p>
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="7" class="py-4 px-6 text-center text-gray-600">{% trans "Chưa có cư dân nào." %}</td>
+                            <td colspan="8" class="py-4 px-6 text-center text-gray-600">{% trans "Chưa có cư dân nào." %}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <!-- Phân trang -->
+        {% if residents.has_other_pages %}
+            <div class="mt-4 flex justify-center">
+                <nav class="inline-flex rounded-md shadow">
+                    {% if residents.has_previous %}
+                        <a href="?page={{ residents.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Trước" %}</a>
+                    {% endif %}
+                    {% for num in residents.paginator.page_range %}
+                        {% if residents.number == num %}
+                            <span class="px-3 py-2 border border-gray-300 bg-blue-600 text-white">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if residents.has_next %}
+                        <a href="?page={{ residents.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{% trans "Tiếp" %}</a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
     </div>
 
     <!-- Modal cho gán phòng -->
@@ -124,7 +193,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="user_id" id="assign-user-id">
                 <div class="space-y-4">
-                    {{ form.as_p }}
+                    {{ form.room }}
                 </div>
                 <div class="flex justify-end mt-6 space-x-3">
                     <button type="button" onclick="closeAssignModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">{% trans "Hủy" %}</button>
