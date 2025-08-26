@@ -1,7 +1,7 @@
 {% extends "base.html" %} 
 {% load static %}
 {% load i18n %} 
-
+{% load notification_tags %}
 {% block sidebar %}
 <div class="bg-gray-800 h-full w-52">
   <a href="{% url 'dashboard' %}" class="p-2 flex justify-center items-center text-white">Logo</a>
@@ -26,12 +26,7 @@
         <span>{% trans "Quản lý phòng ở" %}</span>
       </a>
     </li>
-    <li class="w-full {% if request.resolver_match.url_name == '#' %}bg-gray-500{% endif %} hover:bg-gray-500">
-      <a class="flex items-center gap-2 px-4 py-2" href="#">
-        <i class="fa-solid fa-question"></i>
-        <span>{% trans "Quản lý yêu cầu" %}</span>
-      </a>
-    </li>
+
     {% with request.resolver_match.url_name as current_url %}
     <li class="w-full {% if current_url in 'resident_notification_history' %}bg-gray-500{% endif %} hover:bg-gray-500">
     {% endwith %}
@@ -40,6 +35,8 @@
         <span>{% trans "Lịch sử thông báo" %}</span>
       </a>
     </li>
+
+    {% notification_menu_item "resident_send_notification" %}
   </ul>
 </div>
 {% endblock%}

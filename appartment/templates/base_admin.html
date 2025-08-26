@@ -1,7 +1,7 @@
 {% extends "base.html" %} 
 {% load static %}
 {% load i18n %} 
-
+{% load notification_tags %}
 {% block sidebar %}
 <div class="bg-gray-800 h-full w-52">
   <a href="{% url 'dashboard' %}" class="p-2 flex justify-center items-center text-white">Logo</a>
@@ -28,6 +28,8 @@
         <span>{% trans "Lịch sử thông báo" %}</span>
       </a>
     </li>
+
+    {% notification_menu_item "admin_send_notification" %}
   </ul>
 </div>
 {% endblock%}
