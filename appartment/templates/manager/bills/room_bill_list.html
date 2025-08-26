@@ -1,0 +1,27 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+{% block content %}
+<main x-data="{ isModalOpen: false }" class="flex-1 p-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold">{% trans "Quản lý Hóa đơn:" %}" {{ room.description }}</h1>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for bill in final_bills %}
+            <div class="bg-white p-4 rounded shadow">
+                <p>{% trans "Hóa đơn tháng" %} {{ bill.bill_month|date:"m/Y" }}</p>
+                <a href="{% url 'bill' bill.pk %}?month={{ bill.bill_month|date:'Y-m-d' }}">{% trans "Xem chi tiết" %}</a>
+            </div>
+        {% empty %}
+            <p>{% trans "Phòng này chưa có hóa đơn nào." %}</p>
+        {% endfor %}
+    </div>
+
+    <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+            <a href="{% url 'billing_workspace' %}?month={{ selected_month }}" class="text-blue-600 hover:underline">
+                &larr; {% trans "Quay lại trang Quản lý Hóa đơn" %}
+            </a>
+    </div>
+
+</main>
+{% endblock %}

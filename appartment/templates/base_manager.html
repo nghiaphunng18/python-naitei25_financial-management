@@ -1,6 +1,7 @@
 {% extends "base.html" %} 
 {% load i18n %} 
 {% block sidebar %}
+{% load custom_bill_status %}
 <div class="bg-gray-800 h-full w-52">
   <a href="{% url 'dashboard' %}" class="p-2 flex justify-center items-center text-white">Logo</a>
   <ul class="flex justify-center items-center flex-col py-2 w-full text-white">
@@ -13,7 +14,7 @@
     {% with request.resolver_match.url_name as current_url %}
     <li class="w-full {% if current_url in 'bills_list bill_create bill bill_update bill_delete bill_confirm_payment bill_print' %}bg-gray-500{% endif %} hover:bg-gray-500">
     {% endwith %}
-      <a class="flex items-center gap-2 px-4 py-2" href="{% url 'bills_list' %}">
+      <a class="flex items-center gap-2 px-4 py-2" href="{% current_workspace_url %}">
         <i class="fa-solid fa-money-bills"></i>
         <span>{% trans "Quản lý hóa đơn" %}</span>
       </a>

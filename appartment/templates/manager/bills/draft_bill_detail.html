@@ -23,8 +23,70 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-                <h3 class="text-xl font-semibold mt-6 mb-4">{% trans "Chi tiết tính toán:" %}</h3>
-                <pre class="bg-gray-50 dark:bg-gray-900 p-4 rounded-md text-sm font-mono whitespace-pre-wrap border dark:border-gray-700">{{ draft_bill.details|pprint }}</pre> {# Giả sử bạn đã có filter pprint #}
+                <div>
+                    <h3 class="text-xl font-semibold mt-6 mb-4">{% trans "Chi tiết tính toán:" %}</h3>
+
+                    {# Điện/Nước #}
+                    {% if is_ew %}
+                    <table class="w-full text-sm border rounded overflow-hidden">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-2 text-left">{% trans "Khoản mục" %}</th>
+                            <th class="p-2 text-right">{% trans "Chỉ số cũ" %}</th>
+                            <th class="p-2 text-right">{% trans "Chỉ số mới" %}</th>
+                            <th class="p-2 text-right">{% trans "Số tiêu thụ" %}</th>
+                            <th class="p-2 text-right">{% trans "Đơn giá" %}</th>
+                            <th class="p-2 text-right">{% trans "Thành tiền" %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for r in calc_rows %}
+                            <tr class="border-t">
+                            <td class="p-2 font-medium">{{ r.label }}</td>
+                            <td class="p-2 text-right">{{ r.old }}</td>
+                            <td class="p-2 text-right">{{ r.new }}</td>
+                            <td class="p-2 text-right">{{ r.consumption }}</td>
+                            <td class="p-2 text-right">{{ r.unit_price|currency }}</td>
+                            <td class="p-2 text-right font-semibold">{{ r.amount|currency }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+
+                    {# Dịch vụ #}
+                    {% if is_services %}
+                    <table class="w-full text-sm border rounded overflow-hidden">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-2 text-left">{% trans "Dịch vụ" %}</th>
+                            <th class="p-2 text-left">{% trans "Loại" %}</th>
+                            <th class="p-2 text-right">{% trans "Đơn giá" %}</th>
+                            <th class="p-2 text-right">{% trans "Số lượng" %}</th>
+                            <th class="p-2 text-right">{% trans "Thành tiền" %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for s in service_rows %}
+                            <tr class="border-t">
+                            <td class="p-2 font-medium">{{ s.name }}</td>
+                            <td class="p-2">{{ s.type }}</td>
+                            <td class="p-2 text-right">{{ s.unit_price|currency }}</td>
+                            <td class="p-2 text-right">{{ s.quantity }}</td>
+                            <td class="p-2 text-right font-semibold">{{ s.total|currency }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="p-3 text-center text-gray-500 italic">{% trans "Chưa có dịch vụ." %}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+
+                    <div class="mt-4 p-3 border-t text-right">
+                        <span class="font-bold text-lg text-gray-800 dark:text-white">{% trans "Tổng cộng:" %} </span>
+                        <span class="font-extrabold text-indigo-600 text-xl">{{ grand_total|currency }}</span>
+                    </div>
+                </div>
             </div>
             
             <div class="mt-6">
@@ -48,9 +110,10 @@
             </div>
         </div>
         <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-            <a href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'billing_main' %}{% endif %}" class="text-blue-600 hover:underline">
-                &larr; {% trans "Quay lại Dashboard" %}
-            </a>
+            <a href="{% url 'billing_workspace' %}?month={{ selected_month }}" 
+        class="text-blue-600 hover:underline">
+            &larr; {% trans "Quay lại Dashboard" %}
+        </a>
         </div>
     </div>
 </main>

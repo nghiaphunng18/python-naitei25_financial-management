@@ -1,0 +1,275 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+{% load static %}
+{% load custom_bill_status %}
+{% load json_filters %}
+
+{% block content %}
+<main x-data="billingWorkspace()" @keydown.escape.window="closeModal()" class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+    <div class="flex flex-col md:flex-row justify-between md:items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{% trans "Không gian làm việc Hóa đơn" %}</h1>
+        <a href="{% url 'utility_totals' %}" class="mt-4 md:mt-0 bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">
+            {% trans "Quản lý Tổng Điện/Nước" %}
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+                <label for="month" class="block text-sm font-medium">{% trans "Tháng làm việc" %}</label>
+                <input type="text" name="month" value="{{ selected_month|date:'Y-m-d' }}" class="border rounded p-2 mt-1 w-full month-picker">
+            </div>
+            <div>
+                <label for="q" class="block text-sm font-medium">{% trans "Tìm theo mã/mô tả phòng" %}</label>
+                <input type="search" name="q" value="{{ search_query }}" placeholder="Ví dụ: P101, TPHCM..." class="border rounded p-2 mt-1 w-full">
+            </div>
+            <div>
+                <label for="billing_status" class="block text-sm font-medium">{% trans "Trạng thái chu kỳ" %}</label>
+                <select name="billing_status" class="border rounded p-2 mt-1 w-full">
+                    <option value="">{% trans "Tất cả" %}</option>
+                    <option value="NOT_STARTED" {% if billing_status_filter == 'NOT_STARTED' %}selected{% endif %}>{% trans "Chưa bắt đầu" %}</option>
+                    <option value="IN_PROGRESS" {% if billing_status_filter == 'IN_PROGRESS' %}selected{% endif %}>{% trans "Đang thực hiện" %}</option>
+                    <option value="PENDING_CONFIRMATION" {% if billing_status_filter == 'PENDING_CONFIRMATION' %}selected{% endif %}>{% trans "Chờ xác nhận" %}</option>
+                    <option value="READY_TO_FINALIZE" {% if billing_status_filter == 'READY_TO_FINALIZE' %}selected{% endif %}>{% trans "Sẵn sàng chốt sổ" %}</option>
+                    <option value="FINALIZED" {% if billing_status_filter == 'FINALIZED' %}selected{% endif %}>{% trans "Đã chốt sổ" %}</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-indigo-600 text-white h-11 px-6 rounded-lg">{% trans "Lọc / Tìm kiếm" %}</button>
+        </form>
+    </div>
+
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+        <table class="min-w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                <tr>
+                    <th class="p-3 text-left">{% trans "Phòng" %}</th>
+                    <th class="p-3 text-left">{% trans "Cư dân" %}</th>
+                    <th class="p-3 text-center">{% trans "HĐ Điện/Nước (Nháp)" %}</th>
+                    <th class="p-3 text-center">{% trans "HĐ Dịch vụ (Nháp)" %}</th>
+                    <th class="p-3 text-center">{% trans "Hóa đơn cuối cùng" %}</th>
+                    <th class="p-3 text-left">{% trans "Hành động" %}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for data in workspace_data %}
+                <tr>
+                    <td class="p-3 font-medium"><div class="font-bold">{{ data.room.room_id }}</div><div class="text-xs text-gray-500">{{ data.room.description }}</div></td>
+                    <td class="p-3 text-sm">{% for r in data.residents %}{{ r.user.full_name }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
+                    <td class="p-3 text-center">{% if data.ew_draft %}
+                        <a href="{% url 'draft_bill_detail' data.ew_draft.pk %}?month={{ request.GET.month }}">
+                            {% display_draft_bill_status data.ew_draft %}
+                        </a>{% else %}<span class="text-xs text-gray-500">{% trans "Chưa tạo" %}</span>{% endif %}
+                    </td>
+                    <td class="p-3 text-center">{% if data.services_draft %}
+                        <a href="{% url 'draft_bill_detail' data.services_draft.pk %}?month={{ request.GET.month }}">
+                            {% display_draft_bill_status data.services_draft %}
+                        </a>{% else %}<span class="text-xs text-gray-500">{% trans "Chưa tạo" %}</span>{% endif %}
+                    </td>
+                    <td class="p-3 text-center">{% if data.final_bill %}
+                        <a href="{% url 'bill' data.final_bill.pk %}?month={{ request.GET.month }}">
+                            {% display_bill_status data.final_bill style='badge' %}
+                        </a>{% else %}<span class="text-xs text-red-500 font-semibold">{% trans "Chưa chốt sổ" %}</span>{% endif %}
+                    </td>
+                    <td class="p-3 space-x-2">
+                        <button @click="openModal('{{ data.modal_data_json | escapejs }}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">{% trans "Xử lý HĐ" %}</button>
+                        <a href="{% url 'room_bill_list' data.room.pk %}?month={{ request.GET.month }}" class="text-gray-500 hover:underline text-sm">{% trans "Lịch sử" %}</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="p-4 text-center text-gray-500">{% trans "Không có phòng nào khớp với bộ lọc." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div x-show="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" style="display: none;">
+        <div @click.away="closeModal()" class="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <template x-if="modalData.room_pk">
+                <div>
+                    <div class="flex-shrink-0 flex justify-between items-start">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">{% trans "Xử lý HĐ:" %} <span x-text="modalData.room_description"></span></h2>
+                            <p class="text-gray-500">{% trans "Tháng:" %} {{ selected_month|date:"m/Y" }}</p>
+                        </div>
+                        <button @click="closeModal()" class="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+                    </div>
+                    
+                    <div class="mt-4 p-3 rounded-lg text-center font-semibold"
+                        :class="{
+                            'bg-green-100 text-green-800': modalData.final_bill_status === 'PAID',
+                            'bg-purple-100 text-purple-800': modalData.billing_status === 'FINALIZED' && modalData.final_bill_status !== 'PAID',
+                            'bg-yellow-100 text-yellow-800': modalData.billing_status === 'PENDING_CONFIRMATION' || modalData.billing_status === 'IN_PROGRESS',
+                            'bg-blue-100 text-blue-800': modalData.billing_status === 'READY_TO_FINALIZE'
+                        }">
+                        <span x-text="modalStatusText"></span>
+                    </div>
+                    
+                    <div x-data="{ activeModalTab: 'ew' }" class="mt-4 flex-grow overflow-y-auto">
+                        <div class="border-b border-gray-200 dark:border-gray-700">
+                            <nav class="-mb-px flex space-x-6">
+                                <button @click="activeModalTab = 'ew'" :class="{ 'border-blue-500 text-blue-600': activeModalTab === 'ew' }" class="py-2 border-b-2 font-medium">1. {% trans "Điện & Nước" %}</button>
+                                <button @click="activeModalTab = 'services'" :class="{ 'border-blue-500 text-blue-600': activeModalTab === 'services' }" class="py-2 border-b-2 font-medium">2. {% trans "Dịch vụ" %}</button>
+                                <button @click="activeModalTab = 'finalize'" :class="{ 'border-blue-500 text-blue-600': activeModalTab === 'finalize' }" class="py-2 border-b-2 font-medium">3. {% trans "Tổng hợp" %}</button>
+                            </nav>
+                        </div>
+
+                        <div class="mt-6">
+                            <div x-show="activeModalTab === 'ew'">
+                                <h3 class="font-semibold text-lg mb-4">{% trans "Ghi chỉ số Điện/Nước" %}</h3>
+                                <template x-if="modalData.ew_draft_status !== 'CONFIRMED' && !modalData.final_bill_pk">
+                                    <form :action="'/appartment/manager/bill/room/' + modalData.room_pk + '/save-reading/'" method="post" class="space-y-4">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="month" value="{{ selected_month|date:'Y-m-d' }}">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm">{% trans "Chỉ số điện cũ" %}</label>
+                                                <p class="font-mono p-2 bg-gray-100 rounded mt-1" x-text="modalData.prev_reading_index"></p>
+                                            </div>
+                                            <div>
+                                                <label for="modal-electricity-index" class="block text-sm">{% trans "Chỉ số điện mới" %}</label>
+                                                <input id="modal-electricity-index" type="number" name="electricity_index" :value="modalData.current_reading_electricity" required class="border p-2 w-full mt-1 rounded">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm">{% trans "Chỉ số nước cũ" %}</label>
+                                                <p class="font-mono p-2 bg-gray-100 rounded mt-1" x-text="modalData.prev_reading_water_index"></p>
+                                            </div>
+                                            <div>
+                                                <label for="modal-water-index" class="block text-sm">{% trans "Chỉ số nước mới" %}</label>
+                                                <input id="modal-water-index" type="number" name="water_index" :value="modalData.current_reading_water" required class="border p-2 w-full mt-1 rounded">
+                                            </div>
+                                        </div>
+                                        <div class="text-right mt-4">
+                                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg">{% trans "Lưu chỉ số & Tạo HĐ nháp" %}</button>
+                                        </div>
+                                    </form>
+                                </template>
+                                <template x-if="modalData.ew_draft_status === 'CONFIRMED' || modalData.final_bill_pk">
+                                    <div class="p-4 bg-gray-100 text-gray-600 rounded-lg">
+                                        <p>{% trans "Hóa đơn điện nước đã được xác nhận hoặc đã chốt sổ, không thể chỉnh sửa." %}</p>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div x-show="activeModalTab === 'services'">
+                                <h3 class="font-semibold text-lg mb-4">{% trans "Quản lý Dịch vụ" %}</h3>
+                                <template x-if="modalData.services_draft_status !== 'CONFIRMED' && !modalData.final_bill_pk">
+                                    <form @submit.prevent="addService($event)" id="add-service-form" class="p-4 border rounded-lg bg-gray-50">
+                                        {% csrf_token %}
+                                        
+                                        {# CÁC INPUT ẨN NÀY SẼ ĐƯỢC JAVASCRIPT ĐIỀN VÀO #}
+                                        <input type="hidden" name="room" :value="modalData.room_pk">
+                                        <input type="hidden" name="bill_month" :value="selectedMonth.substring(0, 7)">
+
+                                        <h4 class="font-medium">{% trans "Thêm dịch vụ phát sinh" %}</h4>
+                                        <div class="flex items-end space-x-4 mt-2">
+                                            <div class="flex-grow">
+                                                <label for="service_id_to_add" class="block text-sm">{% trans "Chọn dịch vụ" %}</label>
+                                                <select name="service" id="service_id_to_add" class="border rounded p-2 w-full mt-1">
+                                                    <option value="">---</option>
+                                                    {% for service in addable_services %}<option value="{{ service.pk }}">{{ service.name }}</option>{% endfor %}
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Thêm</button>
+                                        </div>
+                                    </form>
+                                </template>
+                                <template x-if="modalData.services_draft_status === 'CONFIRMED' || modalData.final_bill_pk">
+                                    <div class="p-4 bg-gray-100 text-gray-600 rounded-lg">
+                                        <p>{% trans "Hóa đơn dịch vụ đã được xác nhận hoặc đã chốt sổ, không thể chỉnh sửa." %}</p>
+                                    </div>
+                                </template>
+                                <div class="mt-6">
+                                    <h4 class="font-medium mb-2">{% trans "Các dịch vụ đã áp dụng cho tháng này:" %}</h4>
+                                    <div class="space-y-2">
+                                        {# Lặp qua 'modalData.subscribed_services' #}
+                                        <template x-for="service in modalData.subscribed_services" :key="service.service_id">
+                                            <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                                                <div>
+                                                    <p class="font-semibold">
+                                                        <span x-text="service.name"></span>
+                                                        {# Hiển thị số lượng nếu dịch vụ đó có quantity > 1 #}
+                                                        <template x-if="service.quantity > 1">
+                                                            <span class="text-sm font-bold" x-text="' (x' + service.quantity + ')'"></span>
+                                                        </template>
+                                                    </p>
+                                                    <p class="text-xs text-gray-500" x-text="service.type"></p>
+                                                </div>
+                                                <div class="flex items-center space-x-4">
+                                                    <p class-="font-semibold" x-text="typeof service.total_cost === 'number' ? service.total_cost.toLocaleString('vi-VN') + ' VNĐ' : 'Lỗi giá'"></p>
+                                                    <template x-if="modalData.services_draft_status !== 'CONFIRMED' && !modalData.final_bill_pk">
+                                                        <form @submit.prevent="removeService(service.service_id)">
+                                                            {% csrf_token %}
+                                                            <button type-="submit" class="text-red-500 hover:text-red-700 text-xs font-bold">{% trans "Xóa" %}</button>
+                                                        </form>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        {# Hiển thị thông báo nếu danh sách rỗng #}
+                                        <template x-if="!modalData.subscribed_services || modalData.subscribed_services.length === 0">
+                                            <p class="text-sm text-gray-500 italic">{% trans "Chưa có dịch vụ nào được thêm." %}</p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div x-show="activeModalTab === 'finalize'">
+                                <h3 class="font-semibold text-lg mb-4">{% trans "Tổng hợp & Chốt Hóa đơn" %}</h3>
+                                <p class="text-sm text-gray-500 mb-4">
+                                    {% trans "Hệ thống sẽ tổng hợp tiền thuê phòng, hóa đơn điện nước và hóa đơn dịch vụ đã được xác nhận để tạo ra một hóa đơn cuối cùng." %}
+                                </p>
+                                <template x-if="modalData.is_ready_to_finalize && !modalData.final_bill_pk">
+                                    <form action="{% url 'generate_final_bill' %}" method="post" onsubmit="return confirm('{% trans "Bạn có chắc chắn muốn chốt hóa đơn cho phòng này không?" %}');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="room_id" :value="modalData.room_pk">
+                                        <input type="hidden" name="month" value="{{ selected_month|date:'Y-m-d' }}">
+                                        <button type="submit" class="bg-purple-600 text-white px-6 py-3 rounded-lg w-full font-bold text-lg hover:bg-purple-700">
+                                            {% trans "XÁC NHẬN & TẠO HÓA ĐƠN CUỐI CÙNG" %}
+                                        </button>
+                                    </form>
+                                </template>
+                                <template x-if="!modalData.is_ready_to_finalize && !modalData.final_bill_pk">
+                                    <div class="p-4 border rounded-lg space-y-2 mb-6">
+                                        <div class="flex justify-between">
+                                            <span>{% trans "HĐ Điện/Nước (Nháp):" %}</span>
+                                            <span class="font-bold" :class="{
+                                                'text-green-500': modalData.ew_draft_status === 'Đã xác nhận',
+                                                'text-red-500': modalData.ew_draft_status === 'Bị từ chối',
+                                                'text-yellow-500': modalData.ew_draft_status === 'Đã gửi'
+                                            }" x-text="modalData.ew_draft_status || 'Chưa tạo'"></span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>{% trans "HĐ Dịch vụ (Nháp):" %}</span>
+                                            <span class="font-bold" :class="{
+                                                'text-green-500': modalData.services_draft_status === 'Đã xác nhận',
+                                                'text-red-500': modalData.services_draft_status === 'Bị từ chối',
+                                                'text-yellow-500': modalData.services_draft_status === 'Đã gửi'
+                                            }" x-text="modalData.services_draft_status || 'Chưa tạo'"></span>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center">
+                                        <p class="font-bold">{% trans "Chưa thể tổng hợp" %}</p>
+                                        <p class="text-sm">{% trans "Vui lòng đảm bảo cả hai hóa đơn nháp Điện/Nước và Dịch vụ đều ở trạng thái 'Đã xác nhận'." %}</p>
+                                    </div>
+                                </template>
+                                <template x-if="modalData.final_bill_pk">
+                                    <div class="p-4 bg-green-100 ...">
+                                        <p>{% trans "Hóa đơn cuối cùng đã được tạo cho tháng này." %}</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/manager/custom_calendar.js' %}"></script>
+{% autoescape off %}
+<script src="{% static 'js/manager/bill_workspace.js' %}"></script>
+{% endautoescape %}
+{% endblock %}
