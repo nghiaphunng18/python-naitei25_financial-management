@@ -1,0 +1,72 @@
+{% extends "base_manager.html" %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">{% trans "Gửi thông báo" %}</h1>
+
+    {% if messages %}
+        <div class="mb-6 max-w-md mx-auto">
+            {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} rounded-lg shadow-md">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md border border-gray-200 transition-all duration-300 hover:shadow-lg">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div class="space-y-4">
+                {% if form.non_field_errors %}
+                    <div class="p-4 bg-red-100 text-red-800 rounded-lg shadow-md">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="bg-gray-50 p-3 rounded-md">
+                    <label for="id_receiver_type" class="block text-gray-700 font-medium">{% trans "Gửi cho" %}</label>
+                    {{ form.receiver_type }}
+                </div>
+                <div class="bg-gray-50 p-3 rounded-md">
+                    <label class="block text-gray-700 font-medium">{% trans "Người nhận" %}</label>
+                    <table id="user-table" class="w-full border-collapse mt-2">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="border p-2 text-center">{% trans "Chọn" %}</th>
+                                <th class="border p-2 text-center">{% trans "Tên" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-list">
+                            <!-- ajax -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex items-center mt-2">
+                    {{ form.send_all }}
+                    <label for="id_send_all" class="ml-2 text-gray-700">{% trans "Gửi cho tất cả trong loại" %}</label>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-md">
+                    <label for="{{ form.title.id_for_label }}" class="block text-gray-700 font-medium">{% trans "Tiêu đề" %}</label>
+                    {{ form.title }}
+                </div>
+                <div class="bg-gray-50 p-3 rounded-md">
+                    <label for="{{ form.message.id_for_label }}" class="block text-gray-700 font-medium">{% trans "Nội dung" %}</label>
+                    {{ form.message }}
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 transform hover:scale-105">{% trans "Gửi" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    var loadUsersByRoleUrl = "{% url 'load_users_by_role' %}";
+</script>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/notification_jquery.js' %}"></script>
+{% endblock %}

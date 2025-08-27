@@ -1,0 +1,7 @@
+{% load i18n %} 
+<li class="w-full {% if active %}bg-gray-500{% endif %} hover:bg-gray-500">
+    <a class="flex items-center gap-2 py-2 px-4" href="{% url url_name %}">
+        <i class="fa-solid fa-paper-plane"></i>
+        <span>{% trans label %}</span>
+    </a>
+</li>

@@ -16,8 +16,8 @@ from ..utils.notification_utils import filter_notifications
 
 """
 sender: ROLE_RESIDENT -> receiver: null (ROLE_ADMIN + ROLE_APARTMENT_MANAGER)
-sender: ROLE_APARTMENT_MANAGER -> receiver: ROLE_RESIDENT | ROLE_ADMIN
-sender: ROLE_ADMIN -> receiver: ROLE_APARTMENT_MANAGER 
+sender: ROLE_APARTMENT_MANAGER -> receiver: ROLE_RESIDENT | ROLE_ADMIN | ROLE_MANAGER
+sender: ROLE_ADMIN -> receiver: ROLE_RESIDENT | ROLE_ADMIN | ROLE_MANAGER
 """
 
 

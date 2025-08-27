@@ -25,6 +25,12 @@ from appartment.views.notification_history import (
     resident_notification_history,
     mark_notification_read,
 )
+from appartment.views.notification_send import (
+    admin_send_notification,
+    manager_send_notification,
+    resident_send_notification,
+    load_users_by_role,
+)
 
 urlpatterns = [
     # === CÁC URL TĨNH, CỤ THỂ NHẤT (ƯU TIÊN CAO NHẤT) ===
@@ -32,7 +38,14 @@ urlpatterns = [
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
     path("dashboard/", dashboard, name="dashboard"),
+    # notification
+    path("notification/load-users/", load_users_by_role, name="load_users_by_role"),
     # MANAGER URL
+    path(
+        "manager/send-notification/",
+        manager_send_notification,
+        name="manager_send_notification",
+    ),
     # MANAGER bill
     path("manager/bills_list", bills_view.BillingView.as_view(), name="bills_list"),
     path(
@@ -120,6 +133,11 @@ urlpatterns = [
         name="manager_notification_history",
     ),
     # RESIDENT URL
+    path(
+        "resident/send-notification/",
+        resident_send_notification,
+        name="resident_send_notification",
+    ),
     # RESIDENT bill
     path(
         "resident/my-bill",
@@ -156,6 +174,11 @@ urlpatterns = [
         name="resident_notification_history",
     ),
     # ADMIN URL
+    path(
+        "admin/send-notification/",
+        admin_send_notification,
+        name="admin_send_notification",
+    ),
     path("admin/user_list", admin_user_view.user_list, name="user_list"),
     path("admin/user/create/", admin_user_view.create_user, name="create_user"),
     path(
