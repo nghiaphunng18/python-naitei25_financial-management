@@ -44,6 +44,7 @@ class PaymentStatus(Enum):
     def choices(cls):
         return [(key.value, key.name.replace("_", " ").title()) for key in cls]
 
+
 class PaymentTransactionStatus(Enum):
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
@@ -52,7 +53,8 @@ class PaymentTransactionStatus(Enum):
     @classmethod
     def choices(cls):
         return [(key.value, key.name.replace("_", " ").title()) for key in cls]
-    
+
+
 class WebHookCode(Enum):
     SUCCESS = "00"
     INVALID_PARAMS = "01"
@@ -60,7 +62,8 @@ class WebHookCode(Enum):
     @classmethod
     def choices(cls):
         return [(key.value, key.name.replace("_", " ").title()) for key in cls]
-    
+
+
 class RoomStatus(Enum):
     AVAILABLE = "available"
     OCCUPIED = "occupied"
@@ -138,3 +141,5 @@ STATUS_CHOICES = [
 DEFAULT_PAGE_SIZE = 10
 
 MIN_RENTAL_PRICE = 0
+
+BILL_SEND_DAYS = [25, 26, 27, 28, 29]

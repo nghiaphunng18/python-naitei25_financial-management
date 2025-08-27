@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "appartment.apps.AppartmentConfig",
     "tailwind",
     "theme",
+    "django_crontab",
 ]
 
 TAILWIND_APP_NAME = "theme"
@@ -188,3 +189,16 @@ AUTH_USER_MODEL = "appartment.User"
 LOGIN_URL = "login"
 
 APPEND_SLASH = True
+
+# config email
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+# setup cron
+CRONJOBS = [
+    ("5 5 * * *", "appartment.tasks.send_bills.send_monthly_bills"),
+]

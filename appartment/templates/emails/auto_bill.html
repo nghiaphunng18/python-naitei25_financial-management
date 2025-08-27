@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa đơn tiền phòng</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0"
+                style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <tr>
+                    <td style="background-color: #4a90e2; padding: 30px; text-align: center;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold;">
+                            Hóa đơn tiền phòng {{ month }}/{{ year }}
+                        </h1>
+                    </td>
+                </tr>
+                <!-- Body -->
+                <tr>
+                    <td style="padding: 40px 30px; color: #333333;">
+                        <p style="font-size: 16px; line-height: 1.5; margin: 0 0 20px;">
+                            Kính gửi <strong>{{ user_name }}</strong>,
+                        </p>
+
+                        <p style="font-size: 16px; line-height: 1.5; margin: 0 0 20px;">
+                            Đây là hóa đơn của phòng <strong>{{ room }}</strong> trong tháng {{ month }}/{{ year }}:
+                        </p>
+
+                        <ul style="font-size: 16px; line-height: 1.6;">
+                            <li>Điện: {{ electricity }} VND</li>
+                            <li>Nước: {{ water }} VND</li>
+                            <li>Dịch vụ khác: {{ services }} VND</li>
+                            <li><strong>Tổng: {{ total }} VND</strong></li>
+                        </ul>
+
+                        <p style="font-size: 16px; margin: 20px 0 0;">
+                            Hạn thanh toán: <strong>{{ due_date }}</strong>
+                        </p>
+                    </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                    <td style="background-color: #f9f9f9; padding: 20px; text-align: center; color: #666666; font-size: 14px;">
+                        <p style="margin: 0;">Đây là email tự động, vui lòng không trả lời trực tiếp.</p>
+                        <p style="margin: 0;">© 2025 Apartment Manager</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
