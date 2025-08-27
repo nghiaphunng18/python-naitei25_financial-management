@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
+from payos import PayOS
 
 load_dotenv()
 
@@ -31,13 +32,28 @@ LOCALE_PATHS = [
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
+BASE_URL = os.getenv("BASE_URL")
+
+PAYOS_RETURN_URL = os.getenv(
+    "PAYOS_RETURN_URL", f"{BASE_URL}/appartment/resident/bank_payment/transact_success/"
+)
+
+PAYOS_CANCEL_URL = os.getenv(
+    "PAYOS_CANCEL_URL", f"{BASE_URL}/appartment/resident/bank_payment/transact_success/"
+)
+
+PAYOS = PayOS(
+    client_id=os.getenv("PAYOS_CLIENT_ID"),
+    api_key=os.getenv("PAYOS_API_KEY"),
+    checksum_key=os.getenv("PAYOS_CHECKSUM_KEY"),
+)
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

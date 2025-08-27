@@ -14,7 +14,11 @@ from appartment.views.manager import (
     bills_view,
     rental_prices_views,
 )
-from appartment.views.resident import bill_history_views, resident_room_views
+from appartment.views.resident import (
+    bill_history_views,
+    resident_room_views,
+    bank_payment_views,
+)
 from appartment.views.notification_history import (
     admin_notification_history,
     manager_notification_history,
@@ -122,6 +126,14 @@ urlpatterns = [
         bill_history_views.resident_bill_history,
         name="bill_history",
     ),
+    path(
+        "resident/bank_payment/create/<str:bill_id>/",
+        bank_payment_views.create_payment,
+        name="create_payment",
+    ),
+    path("resident/bank_payment/webhook/", bank_payment_views.payos_webhook, name="payos_webhook"),
+    path("resident/bank_payment/transact_success/", bank_payment_views.payment_success, name="payment_success"),
+    path("resident/bank_payment/transact_cancel/", bank_payment_views.payment_cancel, name="payment_cancel"),
     # RESIDENT room
     path(
         "resident/resident_room_list",

@@ -1,6 +1,11 @@
 from django.db import models
 
-from ..constants import StringLength, PaymentMethod, DecimalConfig
+from ..constants import (
+    StringLength,
+    PaymentMethod,
+    DecimalConfig,
+    PaymentTransactionStatus,
+)
 
 
 class PaymentHistory(models.Model):
@@ -13,7 +18,8 @@ class PaymentHistory(models.Model):
         null=True,
         blank=True,
     )
-    payment_date = models.DateTimeField()
+    order_code = models.BigIntegerField(null=True, blank=True)
+    payment_date = models.DateTimeField(null=True, blank=True)
     amount_paid = models.DecimalField(**DecimalConfig.MONEY)
     payment_method = models.CharField(
         max_length=StringLength.SHORT.value, choices=PaymentMethod.choices()
@@ -26,6 +32,13 @@ class PaymentHistory(models.Model):
         db_column="processed_by",
     )
     notes = models.TextField(null=True, blank=True)
+    transaction_status = models.CharField(
+        max_length=StringLength.SHORT.value,
+        choices=PaymentTransactionStatus.choices(),
+        null=True,
+        blank=True,
+        default=None,
+    )
 
     class Meta:
         db_table = "payment_history"
