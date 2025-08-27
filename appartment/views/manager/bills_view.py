@@ -11,7 +11,9 @@ from django.views import generic
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
 from django.db.models import Q, Sum
-
+from django.forms.models import model_to_dict
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse
 from ...models import (
     Bill,
     PaymentHistory,
@@ -24,137 +26,267 @@ from ...models import (
     BillAdditionalService,
     RentalPrice,
 )
-from ...utils.permissions import RoleRequiredMixin, role_required, RoleRequiredMixin
+from ...utils.permissions import RoleRequiredMixin, role_required
 from ...constants import PaginateNumber, UserRole
 from ...forms.manager import bills_form
-
 from dateutil.relativedelta import relativedelta
 import json, decimal
+from datetime import datetime, date
+from collections import Counter
 
 
-class BillingView(RoleRequiredMixin, generic.TemplateView):
-    template_name = "manager/bills/billing_main.html"
+class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
+    template_name = "manager/bills/billing_workspace.html"
     allowed_roles = UserRole.APARTMENT_MANAGER.value
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # LẤY CÁC THAM SỐ LỌC TỪ URL ---
-        month_str = self.request.GET.get("month")
-        room_id_param = self.request.GET.get("room")
-        status_param = self.request.GET.get("status")
+        # --- LẤY CÁC THAM SỐ LỌC ---
+        month_str = self.request.GET.get("month", timezone.now().strftime("%Y-%m-%d"))
+        search_query = self.request.GET.get("q", "")
+        billing_status_filter = self.request.GET.get("billing_status", "")
 
-        context["current_status_filter"] = status_param
-        month_date = None
+        try:
+            month_date = (
+                timezone.datetime.strptime(month_str, "%Y-%m-%d").date().replace(day=1)
+            )
+        except (ValueError, TypeError):
+            month_date = timezone.now().date().replace(day=1)
+            messages.error(
+                self.request,
+                "Định dạng tháng trên URL không hợp lệ, đã quay về tháng hiện tại.",
+            )
 
-        # LẤY QUERYSET GỐC (CHƯA LỌC) ---
-        final_bills_qs = (
-            Bill.objects.select_related("room")
-            .prefetch_related("room__residents__user")
-            .order_by("-bill_month")
+        context["selected_month"] = month_date
+        context["search_query"] = search_query
+        context["billing_status_filter"] = billing_status_filter
+        previous_month_date = month_date - relativedelta(months=1)
+        start_of_bill_month = month_date
+        start_of_next_month = month_date + relativedelta(months=1)
+
+        # --- LẤY VÀ LỌC DANH SÁCH PHÒNG ---
+        rooms_qs = (
+            Room.objects.prefetch_related("residents__user")
+            .filter(
+                # Điều kiện 1: Có người ở chuyển vào TRƯỚC KHI tháng này kết thúc
+                # Điều kiện 2: VÀ người đó chưa chuyển đi HOẶC chuyển đi SAU KHI tháng này bắt đầu
+                Q(residents__move_out_date__isnull=True)
+                | Q(residents__move_out_date__date__gte=start_of_bill_month),
+                residents__move_in_date__date__lt=start_of_next_month,
+            )
+            .distinct()
+            .order_by("room_id")
         )
-        draft_ew_bills_qs = (
-            DraftBill.objects.filter(draft_type=DraftBill.DraftType.ELECTRIC_WATER)
-            .select_related("room")
-            .order_by("-bill_month")
+        if search_query:
+            rooms_qs = rooms_qs.filter(
+                Q(room_id__icontains=search_query)
+                | Q(description__icontains=search_query)
+            )
+
+        # --- TỔNG HỢP DỮ LIỆU HÓA ĐƠN CHO TỪNG PHÒNG ---
+        workspace_data = []
+
+        # Lấy trước tất cả dữ liệu liên quan trong tháng để tối ưu hóa
+        drafts_for_month = list(DraftBill.objects.filter(bill_month=month_date))
+        final_bills_for_month = list(
+            Bill.objects.filter(
+                bill_month__year=month_date.year, bill_month__month=month_date.month
+            )
         )
-        draft_services_bills_qs = (
-            DraftBill.objects.filter(draft_type=DraftBill.DraftType.SERVICES)
-            .select_related("room")
-            .order_by("-bill_month")
+
+        # Lấy cả chỉ số của tháng hiện tại và tháng trước
+        current_readings_list = list(
+            MonthlyMeterReading.objects.filter(service_month__date=month_date)
+        )
+        prev_readings_list = list(
+            MonthlyMeterReading.objects.filter(service_month__date=previous_month_date)
+        )
+        drafts_for_month = list(DraftBill.objects.filter(bill_month=month_date))
+        final_bills_for_month = list(
+            Bill.objects.filter(
+                bill_month__year=month_date.year, bill_month__month=month_date.month
+            )
         )
 
-        # ÁP DỤNG CÁC BỘ LỌC TUẦN TỰ ---
-        if month_str:
-            try:
-                month_date = timezone.datetime.strptime(month_str, "%Y-%m-%d").date()
-                context["selected_month"] = month_date
+        for room in rooms_qs:
+            # tìm trong dữ liệu đã lấy
+            ew_draft = next(
+                (
+                    d
+                    for d in drafts_for_month
+                    if d.room_id == room.pk and d.draft_type == "ELECTRIC_WATER"
+                ),
+                None,
+            )
+            services_draft = next(
+                (
+                    d
+                    for d in drafts_for_month
+                    if d.room_id == room.pk and d.draft_type == "SERVICES"
+                ),
+                None,
+            )
+            final_bill = next(
+                (b for b in final_bills_for_month if b.room_id == room.pk), None
+            )
+            current_reading = next(
+                (r for r in current_readings_list if r.room_id == room.pk), None
+            )
+            prev_reading = next(
+                (r for r in prev_readings_list if r.room_id == room.pk), None
+            )
+            historical_residents = get_historical_residents(room, month_date)
 
-                final_bills_qs = final_bills_qs.filter(
-                    bill_month__year=month_date.year, bill_month__month=month_date.month
+            is_ready_to_finalize = False
+            if ew_draft and services_draft:
+                if (
+                    ew_draft.status == "CONFIRMED"
+                    and services_draft.status == "CONFIRMED"
+                ):
+                    is_ready_to_finalize = True
+
+            subscribed_services_summary = []
+            if (
+                services_draft
+                and services_draft.details
+                and "services" in services_draft.details
+            ):
+                services_in_draft_list = services_draft.details.get("services", [])
+
+                # Đếm số lần xuất hiện của mỗi service_id
+                service_counts = Counter(
+                    s["service_id"] for s in services_in_draft_list
                 )
-                draft_ew_bills_qs = draft_ew_bills_qs.filter(bill_month=month_date)
-                draft_services_bills_qs = draft_services_bills_qs.filter(
-                    bill_month=month_date
-                )
-            except (ValueError, TypeError):
-                messages.error(self.request, "Định dạng tháng không hợp lệ.")
 
-        if room_id_param:
-            final_bills_qs = final_bills_qs.filter(room_id=room_id_param)
+                # Lấy thông tin chi tiết của các dịch vụ đã có chỉ bằng một query
+                services_info_map = {
+                    s.pk: s
+                    for s in AdditionalService.objects.filter(
+                        pk__in=service_counts.keys()
+                    )
+                }
 
-        if status_param and status_param != "":
-            final_bills_qs = final_bills_qs.filter(status__iexact=status_param)
+                # Tạo danh sách tóm tắt cuối cùng
+                for service_id, quantity in service_counts.items():
+                    service_obj = services_info_map.get(service_id)
+                    if service_obj:
+                        subscribed_services_summary.append(
+                            {
+                                "service_id": service_id,
+                                "name": service_obj.name,
+                                "type": service_obj.type,
+                                "quantity": quantity,
+                                "total_cost": float(service_obj.unit_price * quantity),
+                            }
+                        )
 
-        # -XỬ LÝ DỮ LIỆU BỔ SUNG VÀ GÁN VÀO CONTEXT ---
+            billing_status = "NOT_STARTED"
+            if final_bill:
+                billing_status = "FINALIZED"
+            elif ew_draft and services_draft:
+                if (
+                    ew_draft.status == "CONFIRMED"
+                    and services_draft.status == "CONFIRMED"
+                ):
+                    billing_status = "READY_TO_FINALIZE"
+                else:
+                    billing_status = "PENDING_CONFIRMATION"
+            elif ew_draft or services_draft:
+                billing_status = "IN_PROGRESS"
+            # Tạo dictionary "an toàn" cho JavaScript
+            modal_data_for_js = {
+                "room_pk": room.pk,
+                "room_description": room.description,
+                "is_ready_to_finalize": is_ready_to_finalize,  # <-- Thêm trạng thái sẵn sàng
+                "ew_draft_pk": ew_draft.pk if ew_draft else None,
+                "ew_draft_status": ew_draft.status if ew_draft else None,
+                "services_draft_pk": services_draft.pk if services_draft else None,
+                "services_draft_status": (
+                    services_draft.status if services_draft else None
+                ),
+                "final_bill_pk": final_bill.pk if final_bill else None,
+                "final_bill_status": final_bill.status if final_bill else None,
+                "billing_status": (
+                    billing_status.upper() if billing_status else "UNKNOWN"
+                ),
+                "prev_reading_index": (
+                    float(prev_reading.electricity_index) if prev_reading else 0
+                ),
+                "prev_reading_water_index": (
+                    float(prev_reading.water_index) if prev_reading else 0
+                ),
+                "current_reading_electricity": (
+                    float(current_reading.electricity_index) if current_reading else ""
+                ),
+                "current_reading_water": (
+                    float(current_reading.water_index) if current_reading else ""
+                ),
+                "services_draft_pk": services_draft.pk if services_draft else "new",
+                "subscribed_services": subscribed_services_summary,
+            }
 
-        # Xử lý historical_residents cho hóa đơn cuối cùng (trên queryset đã được lọc)
-        context["final_bills"] = final_bills_qs
-        for bill in context["final_bills"]:
-            start_of_bill_month = bill.bill_month.date()
-            start_of_next_month = start_of_bill_month + relativedelta(months=1)
-            bill.historical_residents = [
-                r
-                for r in bill.room.residents.all()
-                if r.move_in_date.date() < start_of_next_month
-                and (
-                    r.move_out_date is None
-                    or r.move_out_date.date() >= start_of_bill_month
-                )
+            # Dữ liệu đầy đủ cho template Django
+            room_info = {
+                "room": room,
+                "residents": historical_residents,
+                "ew_draft": ew_draft,
+                "services_draft": services_draft,
+                "final_bill": final_bill,
+                "billing_status": billing_status,
+                "modal_data_json": json.dumps(modal_data_for_js, cls=DjangoJSONEncoder),
+            }
+
+            # Xác định trạng thái tổng hợp của phòng trong tháng
+
+            # room_info["billing_status"] = billing_status
+            workspace_data.append(room_info)
+
+        # Lọc lần cuối dựa trên trạng thái tổng hợp (nếu có)
+        if billing_status_filter:
+            workspace_data = [
+                data
+                for data in workspace_data
+                if data["billing_status"] == billing_status_filter
             ]
 
-        context["draft_ew_bills"] = draft_ew_bills_qs
-        context["draft_services_bills"] = draft_services_bills_qs
-        context["all_rooms"] = Room.objects.all().order_by("room_id")
-
-        # Logic kiểm tra cho Luồng 3
-        if month_date and room_id_param:
-            try:
-                selected_room = context["all_rooms"].get(pk=room_id_param)
-                context["selected_room_for_final"] = selected_room
-                # ... (logic kiểm tra confirmed_drafts_count không đổi) ...
-            except Room.DoesNotExist:
-                context["finalization_error"] = _("Phòng không hợp lệ.")
-
-        # Chuẩn bị dữ liệu cho tab nhập liệu nếu có chọn tháng
-        if month_date:
-            previous_month_date = month_date - relativedelta(months=1)
-            context["building_total"] = ElectricWaterTotal.objects.filter(
-                summary_for_month__date=month_date
-            ).first()
-
-            rooms_data = []
-            for room in context["all_rooms"]:
-                reading = MonthlyMeterReading.objects.filter(
-                    room=room, service_month__date=month_date
-                ).first()
-                prev_reading = MonthlyMeterReading.objects.filter(
-                    room=room, service_month__date=previous_month_date
-                ).first()
-                draft = draft_ew_bills_qs.filter(room=room).first()
-
-                rooms_data.append(
-                    {
-                        "room": room,
-                        "reading": reading,
-                        "prev_reading_index": (
-                            prev_reading.electricity_index if prev_reading else 0
-                        ),
-                        "prev_reading_water_index": (
-                            prev_reading.water_index if prev_reading else 0
-                        ),
-                        "draft": draft,
-                    }
-                )
-            context["rooms_data"] = rooms_data
-
+        context["workspace_data"] = workspace_data
+        context["addable_services"] = AdditionalService.objects.all()
         form_initial_data = {}
         if month_date:
+            # Định dạng lại thành chuỗi YYYY-MM cho giá trị ban đầu của form
             form_initial_data["bill_month"] = month_date.strftime("%Y-%m")
+
+        # Khởi tạo form với dữ liệu ban đầu và gán vào context
         context["adhoc_service_form"] = bills_form.AdhocServiceForm(
             initial=form_initial_data
         )
+        return context
 
+
+class RoomBillListView(RoleRequiredMixin, generic.DetailView):
+    model = Room
+    template_name = "manager/bills/room_bill_list.html"
+    pk_url_kwarg = "room_id"
+    context_object_name = "room"
+    allowed_roles = UserRole.APARTMENT_MANAGER.value
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        room = self.get_object()
+        month_raw = self.request.GET.get("month")
+        month = None
+        if month_raw:
+            try:
+                parsed_date = datetime.strptime(month_raw.strip(), "%Y-%m-%d").date()
+                month = parsed_date.strftime("%Y-%m-%d")
+            except ValueError:
+                month = None
+
+        context["selected_month"] = month
+
+        # Lấy danh sách hóa đơn cuối cùng của phòng này
+        context["final_bills"] = Bill.objects.filter(room=room).order_by("-bill_month")
         return context
 
 
@@ -180,9 +312,18 @@ class BillDetailView(RoleRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         bill = self.get_object()
 
-        bill_month_date = bill.bill_month.date()  # SỬA LẠI: Dùng .date()
-        start_of_next_month = bill_month_date + relativedelta(months=1)
+        month_raw = self.request.GET.get("month")
+        month = None
+        if month_raw:
+            try:
+                parsed_date = datetime.strptime(month_raw.strip(), "%Y-%m-%d").date()
+                month = parsed_date.strftime("%Y-%m-%d")
+            except ValueError:
+                month = None
 
+        context["selected_month"] = month
+        bill_month_date = bill.bill_month.date()
+        start_of_next_month = bill_month_date + relativedelta(months=1)
         all_residents = bill.room.residents.all()
         historical_residents = [
             resident
@@ -206,112 +347,61 @@ class BillDetailView(RoleRequiredMixin, generic.DetailView):
         return context
 
 
-class CreateFinalBillView(RoleRequiredMixin, generic.View):
-    template_name = "manager/bills/create_final_bill.html"
+class RemoveServiceFromDraftView(RoleRequiredMixin, generic.View):
     allowed_roles = UserRole.APARTMENT_MANAGER.value
 
-    def get(self, request, *args, **kwargs):
-        # GET request: Hiển thị form trống ban đầu
-        context = {
-            "page_title": _("Tạo Hóa đơn Tổng hợp Thủ công"),
-            "rooms": Room.objects.filter(status="occupied").order_by("room_id"),
-            "step": 1,  # Đánh dấu đây là bước 1
-        }
-        return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        # POST request: Xử lý sau khi người dùng nhấn "Kiểm tra điều kiện"
-        room_id = request.POST.get("room")
-        month_str = request.POST.get("month")
-        context = {
-            "page_title": _("Tạo Hóa đơn Tổng hợp Thủ công"),
-            "rooms": Room.objects.filter(status="occupied").order_by("room_id"),
-            "selected_room_id": room_id,
-            "selected_month_str": month_str,
-            "step": 2,  # Đánh dấu đây là bước 2
-        }
-
-        if not all([room_id, month_str]):
-            messages.error(request, _("Vui lòng chọn phòng và tháng."))
-            return render(request, self.template_name, context)
-
+    def post(self, request, pk):
         try:
-            month_date = timezone.datetime.strptime(month_str, "%Y-%m-%d").date()
-            room = Room.objects.get(pk=room_id)
-        except (ValueError, TypeError, Room.DoesNotExist):
-            messages.error(request, _("Phòng hoặc tháng không hợp lệ."))
-            return render(request, self.template_name, context)
+            draft_bill = get_object_or_404(DraftBill, pk=pk)
+            service_id_to_remove = int(request.POST.get("service_id"))
 
-        # Kiểm tra HĐ nháp đã được xác nhận
-        confirmed_drafts = DraftBill.objects.filter(
-            room=room, bill_month=month_date, status=DraftBill.DraftStatus.CONFIRMED
-        )
+            if not (draft_bill.details and "services" in draft_bill.details):
+                return JsonResponse(
+                    {"status": "error", "message": _("Không có dịch vụ nào để xóa.")},
+                    status=400,
+                )
 
-        ew_draft = confirmed_drafts.filter(
-            draft_type=DraftBill.DraftType.ELECTRIC_WATER
-        ).first()
-        services_draft = confirmed_drafts.filter(
-            draft_type=DraftBill.DraftType.SERVICES
-        ).first()
+            services_list = draft_bill.details.get("services", [])
+            service_to_remove_found = False
 
-        context["ew_draft"] = ew_draft
-        context["services_draft"] = services_draft
+            # Tìm và xóa MỘT bản ghi đầu tiên của dịch vụ được chọn
+            for i, service in enumerate(services_list):
+                if service.get("service_id") == service_id_to_remove:
+                    services_list.pop(i)
+                    service_to_remove_found = True
+                    break
 
-        if ew_draft and services_draft:
-            # Nếu đủ điều kiện, lấy thêm giá thuê để hiển thị tổng dự kiến
-            rental_price_obj = (
-                RentalPrice.objects.filter(room=room, effective_date__lte=month_date)
-                .order_by("-effective_date")
-                .first()
+            if not service_to_remove_found:
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": _("Không tìm thấy dịch vụ trong hóa đơn."),
+                    },
+                    status=404,
+                )
+
+            # Tính lại tổng tiền của toàn bộ hóa đơn nháp dịch vụ
+            new_total_amount = sum(decimal.Decimal(s["cost"]) for s in services_list)
+            draft_bill.total_amount = new_total_amount
+            draft_bill.details["services"] = services_list
+            draft_bill.save()
+
+            # Trả về dữ liệu đã cập nhật để frontend có thể render lại
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "message": "Đã xóa dịch vụ thành công.",
+                    "new_total_amount": float(new_total_amount),
+                    "updated_services": services_list,
+                }
             )
-            context["rental_price"] = rental_price_obj
-            if rental_price_obj:
-                context["is_ready"] = True
-                total_amount = (
-                    rental_price_obj.price
-                    + ew_draft.total_amount
-                    + services_draft.total_amount
-                )
-                context["estimated_total"] = total_amount
-            else:
-                messages.error(
-                    request,
-                    _("Không tìm thấy giá thuê cho phòng %(description)s.")
-                    % {"description": room.description},
-                )
-                context["is_ready"] = False
-        else:
-            context["is_ready"] = False
-            if not ew_draft:
-                messages.warning(
-                    request, _("Hóa đơn Điện/Nước nháp chưa được xác nhận.")
-                )
-            if not services_draft:
-                messages.warning(request, _("Hóa đơn Dịch vụ nháp chưa được xác nhận."))
-
-        return render(request, self.template_name, context)
-
-
-# class BillUpdateView(RoleRequiredMixin, generic.UpdateView):
-#     model = Bill
-#     form_class = bills_form.BillForm
-#     template_name = "manager/bills/bill_form.html"
-#     pk_url_kwarg = "bill_id"
-#     context_object_name = "bill"
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["page_title"] = _(f"Cập nhật Hóa Đơn #{self.object.bill_id}")
-#         context["adhoc_service_form"] = bills_form.AdhocServiceForm()
-#         return context
-
-#     def get_success_url(self):
-#         return reverse("bill", kwargs={"bill_id": self.object.pk})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 class BillDeleteView(RoleRequiredMixin, generic.DeleteView):
     model = Bill
-    success_url = reverse_lazy("bills_list")
+    success_url = reverse_lazy("billing_workspace")
     pk_url_kwarg = "bill_id"
     allowed_roles = UserRole.APARTMENT_MANAGER.value
 
@@ -322,7 +412,7 @@ class BillDeleteView(RoleRequiredMixin, generic.DeleteView):
     def post(self, request, *args, **kwargs):
         bill = self.get_object()
 
-        # Xóa các dữ liệu liên quan (nếu dùng RESTRICT trong ForeignKey)
+        # Xóa các dữ liệu liên quan
         PaymentHistory.objects.filter(bill=bill).delete()
         BillAdditionalService.objects.filter(bill=bill).delete()
 
@@ -338,7 +428,7 @@ class BillDeleteView(RoleRequiredMixin, generic.DeleteView):
 def confirm_payment_view(request, bill_id):
     bill = get_object_or_404(Bill, pk=bill_id)
     if bill.status.upper() != "PAID":
-        bill.status = "paid"  # Hoặc "PAID" tùy theo giá trị bạn muốn lưu
+        bill.status = "paid"
         bill.save()
         PaymentHistory.objects.create(
             bill=bill,
@@ -437,8 +527,8 @@ class SaveMeterReadingView(RoleRequiredMixin, generic.View):
         month_str = request.POST.get("month")
 
         # Chuyển hướng về trang chính nếu không có tháng
-        # Sửa lại để trỏ về bills_list thay vì bills_list
-        redirect_url = reverse("bills_list")
+        # trỏ về billing_workspace thay vì billing_workspace
+        redirect_url = reverse("billing_workspace")
         if not month_str:
             messages.error(
                 request, _("Lỗi: Thiếu thông tin tháng. Vui lòng chọn lại tháng.")
@@ -483,7 +573,7 @@ class SaveMeterReadingView(RoleRequiredMixin, generic.View):
         # Chuyển thành dạng dictionary để tra cứu nhanh, tránh N+1 query
         previous_readings_map = {r.room_id: r for r in previous_readings}
         current_readings_map = {r.room_id: r for r in current_readings}
-        # Cập nhật (giả lập) chỉ số mới cho phòng đang được lưu
+        # Cập nhật chỉ số mới cho phòng đang được lưu
         # để tính toán tổng tiêu thụ "nếu" lưu thành công
         current_readings_map[room_to_update.room_id] = MonthlyMeterReading(
             electricity_index=new_electricity_index, water_index=new_water_index
@@ -612,10 +702,82 @@ class DraftBillDetailView(RoleRequiredMixin, generic.DetailView):
     allowed_roles = UserRole.APARTMENT_MANAGER.value
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Truyền tất cả các lựa chọn status vào template
-        context["status_choices"] = DraftBill.DraftStatus.choices
-        return context
+        ctx = super().get_context_data(**kwargs)
+        bill: DraftBill = self.object
+        d = bill.details or {}
+
+        # Cờ để template biết hiển thị phần nào
+        month_raw = self.request.GET.get("month")
+        month = None
+        if month_raw:
+            try:
+                clean_value = month_raw.strip().split("&")[0]
+                parsed_date = datetime.strptime(clean_value, "%Y-%m-%d").date()
+                month = parsed_date.strftime("%Y-%m-%d")
+            except ValueError:
+                month = None
+
+        ctx["selected_month"] = month
+        ctx["is_ew"] = bill.draft_type == DraftBill.DraftType.ELECTRIC_WATER
+        ctx["is_services"] = bill.draft_type == DraftBill.DraftType.SERVICES
+
+        def fnum(v):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return 0.0
+
+        if ctx["is_ew"]:
+            rows = [
+                {
+                    "label": "Điện",
+                    "old": d.get("old_electric_index"),
+                    "new": d.get("new_electric_index"),
+                    "consumption": d.get("electric_consumption"),
+                    "unit_price": fnum(d.get("electric_unit_price")),
+                    "amount": fnum(d.get("electric_cost")),
+                },
+                {
+                    "label": "Nước",
+                    "old": d.get("old_water_index"),
+                    "new": d.get("new_water_index"),
+                    "consumption": d.get("water_consumption"),
+                    "unit_price": fnum(d.get("water_unit_price")),
+                    "amount": fnum(d.get("water_cost")),
+                },
+            ]
+            ctx["calc_rows"] = rows
+            ctx["grand_total"] = sum(r["amount"] for r in rows)
+
+        if ctx["is_services"]:
+            # d.get("services") là list các item đã thêm vào draft
+            items = d.get("services", [])
+            summary = {}
+            for s in items:
+                sid = s.get("service_id")
+                if not sid:
+                    continue
+                if sid not in summary:
+                    unit = s.get("unit_price", s.get("cost", 0))
+                    summary[sid] = {
+                        "name": s.get("name", f"Dịch vụ {sid}"),
+                        "type": s.get("type", ""),
+                        "unit_price": fnum(unit),
+                        "quantity": 0,
+                        "total": 0.0,
+                    }
+                summary[sid]["quantity"] += 1
+                summary[sid]["total"] = (
+                    summary[sid]["quantity"] * summary[sid]["unit_price"]
+                )
+
+            rows = list(summary.values())
+            ctx["service_rows"] = rows
+            ctx["grand_total"] = sum(r["total"] for r in rows)
+
+        # lựa chọn trạng thái cho form
+        ctx["status_choices"] = DraftBill.DraftStatus.choices
+        return ctx
 
 
 @role_required(UserRole.APARTMENT_MANAGER.value)
@@ -640,13 +802,37 @@ def update_draft_bill_status_view(request, pk):
 
 # tạo một hàm helper để tái sử dụng logic này
 def get_historical_residents(room, bill_month):
-    start_of_next_month = bill_month + relativedelta(months=1)
-    return [
+    """
+    Lấy danh sách các đối tượng RoomResident duy nhất theo user
+    đã ở trong phòng tại tháng hóa đơn.
+    """
+    # Đảm bảo bill_month luôn là đối tượng date
+    bill_month_date = (
+        bill_month.date() if isinstance(bill_month, timezone.datetime) else bill_month
+    )
+    start_of_next_month = bill_month_date + relativedelta(months=1)
+
+    # lấy tất cả các bản ghi RoomResident hợp lệ trong tháng (có thể bị trùng user)
+    valid_resident_records = [
         res
         for res in room.residents.all()
         if res.move_in_date.date() < start_of_next_month
-        and (res.move_out_date is None or res.move_out_date.date() >= bill_month)
+        and (res.move_out_date is None or res.move_out_date.date() >= bill_month_date)
     ]
+
+    # Lọc để giữ lại duy nhất một bản ghi cho mỗi user_id
+    unique_residents = []
+    seen_user_ids = set()  # Dùng set để theo dõi các user_id đã gặp
+
+    for resident_record in valid_resident_records:
+        # Nếu user_id của bản ghi này chưa từng được thấy...
+        if resident_record.user_id not in seen_user_ids:
+            # ... thêm bản ghi này vào kết quả cuối cùng...
+            unique_residents.append(resident_record)
+            # ... đánh dấu là đã thấy user_id này.
+            seen_user_ids.add(resident_record.user_id)
+
+    return unique_residents
 
 
 class AddAdhocServiceView(RoleRequiredMixin, generic.View):
@@ -659,31 +845,29 @@ class AddAdhocServiceView(RoleRequiredMixin, generic.View):
     def post(self, request, *args, **kwargs):
         form = bills_form.AdhocServiceForm(request.POST)
 
-        # chuẩn bị URL để redirect, kể cả khi lỗi
+        # Chuẩn bị URL để redirect, kể cả khi lỗi
         month_str_from_post = request.POST.get("bill_month", "")  # Format YYYY-MM
-        redirect_url = reverse("bills_list")
+        redirect_url = request.META.get("HTTP_REFERER", reverse("billing_workspace"))
         if month_str_from_post:
-            # giữ lại tháng đã chọn trên URL khi có lỗi
+            # Giữ lại tháng đã chọn trên URL khi có lỗi
             redirect_url = f"{redirect_url}?month={month_str_from_post}-01"
 
         if form.is_valid():
             room = form.cleaned_data["room"]
             service_to_add = form.cleaned_data["service"]
+            bill_month_str = form.cleaned_data["bill_month"]
 
-            # Chuyển đổi YYYY-MM từ form thành đối tượng date
             try:
-                bill_month = (
-                    timezone.datetime.strptime(
-                        form.cleaned_data["bill_month"], "%Y-%m-%d"
-                    )
-                    .date()
-                    .replace(day=1)
-                )
+                room = Room.objects.get(pk=room)
+                bill_month = timezone.datetime.strptime(bill_month_str, "%Y-%m").date()
             except (ValueError, TypeError):
-                messages.error(request, _("Định dạng tháng trong form không hợp lệ."))
+                return JsonResponse(
+                    {"status": "error", "message": _("Phòng hoặc tháng không hợp lệ.")},
+                    status=400,
+                )
                 return redirect(redirect_url)
 
-            # Tìm hoặc tạo hóa đơn nháp dịch vụ cho phòng và tháng đó
+            # Tìm hoặc tạo hóa đơn nháp dịch vụ duy nhất cho phòng và tháng đó
             draft_bill, created = DraftBill.objects.get_or_create(
                 room=room,
                 bill_month=bill_month,
@@ -695,62 +879,113 @@ class AddAdhocServiceView(RoleRequiredMixin, generic.View):
                 },
             )
 
-            # Kiểm tra dịch vụ đã tồn tại trong hóa đơn nháp chưa
-            if any(
-                s.get("service_id") == service_to_add.pk
-                for s in draft_bill.details.get("services", [])
-            ):
-                messages.warning(
-                    request,
-                    _(f"Dịch vụ '{service_to_add.name}' đã có trong hóa đơn nháp này."),
-                )
-                return redirect(
-                    f"{reverse('bills_list')}?month={bill_month.strftime('%Y-%m-%d')}"
-                )
+            # Kiểm tra giới hạn số lượng dịch vụ
+            services_in_draft = draft_bill.details.get("services", [])
+            service_type = service_to_add.type.upper()
+            service_counts = Counter(s["service_id"] for s in services_in_draft)
 
-            # Tính toán chi phí cho dịch vụ mới
+            # Lấy số người ở trong tháng để kiểm tra
             num_residents = len(get_historical_residents(room, bill_month))
-            cost = 0
-            if service_to_add.type.upper() == "PER_ROOM":
-                cost = service_to_add.unit_price
-            elif service_to_add.type.upper() == "PER_PERSON" and num_residents > 0:
-                cost = service_to_add.unit_price * num_residents
 
-            # Cập nhật hóa đơn nháp
+            if service_type == "PER_ROOM":
+                if service_to_add.pk in service_counts:
+                    return JsonResponse(
+                        {
+                            "status": "error",
+                            "message": _(
+                                f"Dịch vụ '{service_to_add.name}' (theo phòng) chỉ có thể thêm một lần."
+                            ),
+                        },
+                        status=400,
+                    )
+
+            elif service_type == "PER_PERSON":
+                if num_residents == 0:
+                    return JsonResponse(
+                        {
+                            "status": "error",
+                            "messages": _(
+                                f"Không thể thêm dịch vụ theo người cho phòng trống."
+                            ),
+                        },
+                        status=400,
+                    )
+                if service_counts.get(service_to_add.pk, 0) >= num_residents:
+                    return JsonResponse(
+                        {
+                            "status": "error",
+                            "messages": _(
+                                f"Đã đạt số lượng tối đa ({num_residents}) cho dịch vụ '{service_to_add.name}'."
+                            ),
+                        },
+                        status=400,
+                    )
+
+            # 3. Tính toán chi phí cho dịch vụ mới
+            cost = service_to_add.unit_price  # Mặc định là giá gốc (cho PER_ROOM)
+            if service_type == "PER_PERSON":
+                # Với dịch vụ theo người, chi phí của một lượt thêm luôn là đơn giá
+                # Tổng tiền sẽ được tính lại dựa trên tổng số lượng
+                pass
+
+            # 4. Cập nhật hóa đơn nháp
             draft_bill.details["services"].append(
                 {
                     "service_id": service_to_add.pk,
                     "name": service_to_add.name,
                     "cost": float(cost),
                     "type": service_to_add.type,
-                    "num_residents": (
-                        num_residents
-                        if service_to_add.type.upper() == "PER_PERSON"
-                        else None
-                    ),
                     "unit_price": float(service_to_add.unit_price),
                 }
             )
-            draft_bill.total_amount += decimal.Decimal(cost)
+
+            # Tính lại tổng tiền của hóa đơn nháp dịch vụ
+            new_total_amount = sum(
+                decimal.Decimal(s["cost"]) for s in draft_bill.details["services"]
+            )
+            draft_bill.total_amount = new_total_amount
             draft_bill.save()
 
-            messages.success(
-                request,
-                _(
-                    f"Đã thêm dịch vụ '{service_to_add.name}' vào HĐ nháp của phòng {room.description}."
-                ),
-            )
+            # Chuẩn bị dữ liệu trả về cho frontend
+            # Đây là logic tổng hợp lại danh sách dịch vụ để gửi về
+            services_in_draft_list = draft_bill.details.get("services", [])
+            service_counts = Counter(s["service_id"] for s in services_in_draft_list)
+            services_info_map = {
+                s.pk: s
+                for s in AdditionalService.objects.filter(pk__in=service_counts.keys())
+            }
 
-            # Chuyển hướng khi thành công
-            return redirect(
-                _(f"{reverse('bills_list')}?month={bill_month.strftime('%Y-%m-%d')}")
+            updated_summary = []
+            for service_id, quantity in service_counts.items():
+                service_obj = services_info_map.get(service_id)
+                if service_obj:
+                    updated_summary.append(
+                        {
+                            "service_id": service_id,
+                            "name": service_obj.name,
+                            "type": service_obj.type,
+                            "quantity": quantity,
+                            "total_cost": float(service_obj.unit_price * quantity),
+                        }
+                    )
+
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "message": _(f"Đã thêm dịch vụ '{service_to_add.name}'."),
+                    "updated_services_summary": updated_summary,  # Gửi lại danh sách đã cập nhật
+                    "services_draft_pk": draft_bill.pk,
+                }
             )
         else:
-            # Khi form KHÔNG hợp lệ
-            # Lấy lỗi đầu tiên để hiển thị
-            first_error = next(iter(form.errors.values()))[0]
-            messages.error(request, f"Dữ liệu không hợp lệ: {first_error}")
-            return redirect(redirect_url)
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": _("Dữ liệu không hợp lệ."),
+                    "errors": form.errors,
+                },
+                status=400,
+            )
 
 
 class GenerateFinalBillView(RoleRequiredMixin, generic.View):
@@ -774,7 +1009,7 @@ class GenerateFinalBillView(RoleRequiredMixin, generic.View):
 
         month_date = timezone.datetime.strptime(month_str, "%Y-%m-%d").date()
         room = get_object_or_404(Room, pk=room_id)
-        redirect_url = f"{reverse('bills_list')}?month={month_str}"
+        redirect_url = f"{reverse('billing_workspace')}?month={month_str}"
 
         # Kiểm tra lại lần cuối trước khi tạo
         confirmed_drafts = DraftBill.objects.filter(

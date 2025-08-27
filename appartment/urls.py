@@ -52,6 +52,7 @@ urlpatterns = [
         name="manager_send_notification",
     ),
     # MANAGER bill
+
     path(
         "manager/bills_list",
         bills_view.BillingView.as_view(),
@@ -59,10 +60,16 @@ urlpatterns = [
     ),
     path("profile/", profile_view, name="profile"),
     path("profile/edit", profile_edit_view, name="profile_edit"),
+
     path(
-        "manager/bill/create/",
-        bills_view.CreateFinalBillView.as_view(),
-        name="bill_create",
+        "manager/billing/workspace/",
+        bills_view.BillingWorkspaceView.as_view(),
+        name="billing_workspace",
+    ),
+    path(
+        "manager/bill/utility_totals",
+        bills_view.BuildingUtilityTotalView.as_view(),
+        name="utility_totals",
     ),
     path(
         "manager/bill/generate-final-bill/",
@@ -101,6 +108,11 @@ urlpatterns = [
         name="draft_bill_detail",
     ),
     path(
+        "manager/bill/draft-bill/<int:pk>/remove-service/",
+        bills_view.RemoveServiceFromDraftView.as_view(),
+        name="remove_service_from_draft",
+    ),
+    path(
         "manager/bill/draft-bill/<int:pk>/update-status/",
         bills_view.update_draft_bill_status_view,
         name="update_draft_bill_status",
@@ -118,6 +130,11 @@ urlpatterns = [
         "manager/<str:room_id>/edit/",
         room_views.room_update,
         name="room_update",
+    ),
+    path(
+        "room/<str:room_id>/bills/",
+        bills_view.RoomBillListView.as_view(),
+        name="room_bill_list",
     ),
     path(
         "manager/<str:room_id>/history/",

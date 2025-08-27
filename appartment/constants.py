@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class StringLength(Enum):
+    VVERY_SHORT = 7
     VERY_SHORT = 10
     SHORT = 20
     MEDIUM = 30

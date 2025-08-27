@@ -1,12 +1,14 @@
 from django import forms
 from appartment.models.bills import Bill
 from ...models import Room, AdditionalService
+from django.utils.translation import gettext_lazy as _
+from ...constants import StringLength
 
 
 class BillForm(forms.ModelForm):
     # Sử dụng widget để có ô chọn tháng/năm thân thiện hơn
     bill_month = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "month"}), label="Tháng của hóa đơn"
+        widget=forms.DateInput(attrs={"type": "month"}), label=_("Tháng của hóa đơn")
     )
 
     class Meta:
@@ -48,19 +50,17 @@ class BillForm(forms.ModelForm):
 
 
 class AdhocServiceForm(forms.Form):
-    room = forms.ModelChoiceField(
-        queryset=Room.objects.all(),
-        label="Chọn phòng",
-        widget=forms.Select(attrs={"class": "border rounded p-2 w-full mt-1"}),
-    )
+    # Dùng CharField cho room để nhận pk dạng chuỗi ('P101') từ input ẩn
+    room = forms.CharField(widget=forms.HiddenInput())
+
+    # ModelChoiceField sẽ tự động xác thực service_id
     service = forms.ModelChoiceField(
         queryset=AdditionalService.objects.all(),
-        label="Chọn dịch vụ",
-        widget=forms.Select(attrs={"class": "border rounded p-2 w-full mt-1"}),
+        label=_("Chọn dịch vụ"),
+        empty_label=_("--- Chọn dịch vụ ---"),
+        required=True,
     )
+    # CharField cho tháng dạng YYYY-MM
     bill_month = forms.CharField(
-        label="Tháng áp dụng",
-        widget=forms.TextInput(
-            attrs={"type": "month", "class": "border rounded p-2 w-full mt-1"}
-        ),
+        max_length=StringLength.VVERY_SHORT.value, widget=forms.HiddenInput()
     )
