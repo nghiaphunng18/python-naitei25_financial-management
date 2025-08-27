@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.utils.translation import gettext_lazy as _
 
-from appartment.constants import UserRole
+from appartment.constants import UserRole, RoomStatus
 from appartment.models.rental_prices import RentalPrice
 from ...forms.manager.room_forms import CreateRoomForm, UpdateRoomForm
 from ...models import Room, RoomResident
@@ -39,11 +39,14 @@ def create_room(request):
             except Exception as e:
                 messages.error(
                     request,
-                    _("Có lỗi xảy ra khi tạo phòng: %(error)s") % {"error": str(e)},
+                    _("Có lỗi xảy ra khi tạo phòng: %(error)s")
+                    % {"error": str(e)},
                 )
         else:
             # Form có lỗi validation
-            messages.error(request, _("Vui lòng kiểm tra lại thông tin đã nhập."))
+            messages.error(
+                request, _("Vui lòng kiểm tra lại thông tin đã nhập.")
+            )
     else:
         # GET request - hiển thị form trống
         form = CreateRoomForm()
@@ -65,7 +68,9 @@ def room_detail(request, room_id):
     # Lấy thông tin phòng
     room = get_object_or_404(Room, room_id=room_id)
 
-    rental_prices = RentalPrice.objects.filter(room=room).order_by("-effective_date")
+    rental_prices = RentalPrice.objects.filter(room=room).order_by(
+        "-effective_date"
+    )
 
     # Lấy danh sách người đang ở hiện tại (move_out_date = NULL)
     current_residents = (
@@ -99,9 +104,10 @@ def room_detail(request, room_id):
         "total_residents_ever": total_residents_ever,
         "occupancy_rate": round(occupancy_rate, 1),
         "available_spots": room.max_occupants - current_occupants_count,
-        "page_title": _("Chi tiết phòng %(room_id)s") % {"room_id": room.room_id},
+        "page_title": _("Chi tiết phòng %(room_id)s")
+        % {"room_id": room.room_id},
         "rental_prices": rental_prices,
-        "rental_price_form": rental_price_form
+        "rental_price_form": rental_price_form,
     }
 
     return render(request, "manager/rooms/room_detail.html", context)
@@ -133,7 +139,9 @@ def room_update(request, room_id):
                 updated_room = form.save()
                 messages.success(
                     request,
-                    _('Thông tin phòng "%(room_id)s" đã được cập nhật thành công!')
+                    _(
+                        'Thông tin phòng "%(room_id)s" đã được cập nhật thành công!'
+                    )
                     % {"room_id": updated_room.room_id},
                 )
 
@@ -148,16 +156,21 @@ def room_update(request, room_id):
                 )
         else:
             # Form có lỗi validation
-            messages.error(request, _("Vui lòng kiểm tra lại thông tin đã nhập."))
+            messages.error(
+                request, _("Vui lòng kiểm tra lại thông tin đã nhập.")
+            )
     else:
         # GET request - hiển thị form với dữ liệu hiện tại
-        form = UpdateRoomForm(instance=room, current_occupants=current_occupants)
+        form = UpdateRoomForm(
+            instance=room, current_occupants=current_occupants
+        )
 
     context = {
         "form": form,
         "room": room,
         "current_occupants": current_occupants,
-        "page_title": _("Chỉnh sửa phòng %(room_id)s") % {"room_id": room.room_id},
+        "page_title": _("Chỉnh sửa phòng %(room_id)s")
+        % {"room_id": room.room_id},
     }
 
     return render(request, "manager/rooms/update_room.html", context)
@@ -167,32 +180,109 @@ def room_update(request, room_id):
 @role_required(UserRole.APARTMENT_MANAGER.value)
 def room_list(request):
     """
-    View để hiển thị danh sách phòng với thông tin số người ở
+    View để hiển thị danh sách phòng với thông tin số người ở và filter
     """
-    # Lấy tất cả phòng với thông tin số người ở hiện tại
+    # Lấy parameters từ URL
+    status_filter = request.GET.get("status", "")
+    occupancy_filter = request.GET.get("occupancy", "")
+    area_filter = request.GET.get("area", "")
+    max_occupants_filter = request.GET.get("max_occupants", "")
+
+    # Base queryset
     rooms = Room.objects.all().order_by("-created_at")
 
-    # Thêm thông tin số người ở cho mỗi phòng
+    # Apply filters
+    if status_filter:
+        rooms = rooms.filter(status=status_filter)
+
+    if area_filter:
+        if area_filter == "small":  # < 20m²
+            rooms = rooms.filter(area__lt=20)
+        elif area_filter == "medium":  # 20-50m²
+            rooms = rooms.filter(area__gte=20, area__lte=50)
+        elif area_filter == "large":  # > 50m²
+            rooms = rooms.filter(area__gt=50)
+
+    if max_occupants_filter:
+        if max_occupants_filter == "small":  # 1-2 người
+            rooms = rooms.filter(max_occupants__lte=2)
+        elif max_occupants_filter == "medium":  # 3-5 người
+            rooms = rooms.filter(max_occupants__gte=3, max_occupants__lte=5)
+        elif max_occupants_filter == "large":  # > 5 người
+            rooms = rooms.filter(max_occupants__gt=5)
+
+    # Cập nhật trạng thái phòng và thêm thông tin số người ở cho mỗi phòng
     rooms_with_occupants = []
     for room in rooms:
         current_occupants = RoomResident.objects.filter(
             room=room, move_out_date__isnull=True
         ).count()
 
+        # Tự động cập nhật trạng thái phòng (chỉ với available/occupied)
+        should_update_status = False
+        if current_occupants == 0 and room.status == "occupied":
+            room.status = "available"
+            should_update_status = True
+        elif current_occupants > 0 and room.status == "available":
+            room.status = "occupied"
+            should_update_status = True
+
+        # Lưu thay đổi nếu cần (giữ nguyên maintenance và unavailable)
+        if should_update_status:
+            room.save(update_fields=["status"])
+
+        occupancy_rate = (
+            (current_occupants / room.max_occupants * 100)
+            if room.max_occupants > 0
+            else 0
+        )
+
         room_data = {
             "room": room,
             "current_occupants": current_occupants,
-            "occupancy_rate": (
-                (current_occupants / room.max_occupants * 100)
-                if room.max_occupants > 0
-                else 0
-            ),
+            "occupancy_rate": occupancy_rate,
         }
+
+        # Apply occupancy filter
+        if occupancy_filter:
+            if occupancy_filter == "empty" and current_occupants > 0:
+                continue
+            elif occupancy_filter == "partial" and (
+                current_occupants == 0
+                or current_occupants == room.max_occupants
+            ):
+                continue
+            elif (
+                occupancy_filter == "full"
+                and current_occupants < room.max_occupants
+            ):
+                continue
+
         rooms_with_occupants.append(room_data)
 
+    # AJAX request - return JSON
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(
+            request,
+            "manager/rooms/room_cards.html",
+            {
+                "rooms_with_occupants": rooms_with_occupants,
+            },
+        )
+
+    # Regular request - return full page
     context = {
         "rooms_with_occupants": rooms_with_occupants,
         "page_title": _("Danh sách phòng"),
+        "total_rooms": len(rooms_with_occupants),
+        "room_status_choices": RoomStatus.choices(),
+        # Filter values for maintaining state
+        "current_filters": {
+            "status": status_filter,
+            "occupancy": occupancy_filter,
+            "area": area_filter,
+            "max_occupants": max_occupants_filter,
+        },
     }
 
     return render(request, "manager/rooms/room_list.html", context)

@@ -35,11 +35,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 BASE_URL = os.getenv("BASE_URL")
 
 PAYOS_RETURN_URL = os.getenv(
-    "PAYOS_RETURN_URL", f"{BASE_URL}/appartment/resident/bank_payment/transact_success/"
+    "PAYOS_RETURN_URL",
+    f"{BASE_URL}/appartment/resident/bank_payment/transact_success/",
 )
 
 PAYOS_CANCEL_URL = os.getenv(
-    "PAYOS_CANCEL_URL", f"{BASE_URL}/appartment/resident/bank_payment/transact_success/"
+    "PAYOS_CANCEL_URL",
+    f"{BASE_URL}/appartment/resident/bank_payment/transact_success/",
 )
 
 PAYOS = PayOS(
@@ -108,7 +110,9 @@ WSGI_APPLICATION = "apartmentmanager.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("DB_DATABASE"),  # Tên database đã tạo trong MySQL
+        "NAME": os.environ.get(
+            "DB_DATABASE"
+        ),  # Tên database đã tạo trong MySQL
         "USER": os.environ.get("DB_USERNAME"),  # Ví dụ: 'root'
         "PASSWORD": os.environ.get("DB_PASSWORD"),
         "HOST": os.environ.get(
