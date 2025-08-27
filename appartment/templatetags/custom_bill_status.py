@@ -1,6 +1,9 @@
 from django import template
 from ..constants import PaymentStatus
 from ..models import DraftBill
+from django.utils import timezone
+from django.urls import reverse
+
 
 register = template.Library()
 
@@ -88,3 +91,17 @@ def display_draft_bill_status(draft_bill):
         "status_text": status_info["text"],
         "css_class": status_info["css_class"],
     }
+
+
+@register.simple_tag
+def current_workspace_url():
+    """
+    Tạo ra URL cho trang billing workspace với tham số tháng là tháng hiện tại.
+    """
+    today = timezone.now().date()
+    # Lấy ngày đầu tháng
+    first_day_of_month = today.replace(day=1)
+    # Tạo URL cơ bản
+    base_url = reverse("billing_workspace")
+    # Trả về URL có query string
+    return f"{base_url}?month={first_day_of_month.strftime('%Y-%m-%d')}"

@@ -11,7 +11,7 @@
                 <p>{% trans "Tháng:" %} {{ bill.bill_month|date:"m/Y" }}</p>
             </div>
 
-            <a href="{% url 'bill' bill.bill_id %}" 
+            <a href="{% url 'bill' bill.bill_id %}?month={{ bill.bill_month|date:'Y-m-d' }}" 
                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold rounded-lg shadow-sm transition duration-300 print:hidden">
                 &larr; {% trans "Quay lại chi tiết" %}
             </a>
