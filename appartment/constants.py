@@ -43,7 +43,23 @@ class PaymentStatus(Enum):
     def choices(cls):
         return [(key.value, key.name.replace("_", " ").title()) for key in cls]
 
+class PaymentTransactionStatus(Enum):
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
 
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name.replace("_", " ").title()) for key in cls]
+    
+class WebHookCode(Enum):
+    SUCCESS = "00"
+    INVALID_PARAMS = "01"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name.replace("_", " ").title()) for key in cls]
+    
 class RoomStatus(Enum):
     AVAILABLE = "available"
     OCCUPIED = "occupied"
@@ -112,6 +128,7 @@ class PaginateNumber(Enum):
 
 DAY_MONTH_YEAR_FORMAT = "%d/%m/%Y"
 MONTH_YEAR_FORMAT = "%m/%Y"
+DATE_TIME_FORMAT = "%d/%m/%Y %H:%M"
 
 STATUS_CHOICES = [
     ("True", "Active"),

@@ -46,6 +46,7 @@
                             <th class="p-4 text-left"><i class="fas fa-money-bill-wave mr-1"></i> {% trans "Tổng tiền" %}</th>
                             <th class="p-4 text-left"><i class="fas fa-info-circle mr-1"></i> {% trans "Trạng thái" %}</th>
                             <th class="p-4 text-left"><i class="fas fa-calendar-times mr-1"></i> {% trans "Hạn thanh toán" %}</th>
+                            <th class="p-4 text-left"><i class="fas fa-calendar-times mr-1"></i> {% trans "Thanh toán ngay" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -77,6 +78,20 @@
                                 </td>
                                 <td class="p-4">
                                     {{ bill|format_due_date }}
+                                </td>
+                                <td class="p-4 text-center">
+                                    {% if bill.status == "unpaid" %}
+                                        <form method="post" action="{% url 'create_payment' bill.bill_id %}">
+                                            {% csrf_token %}
+                                            <button 
+                                                type="submit" 
+                                                class="bg-red-100 text-red-800 font-medium px-2.5 py-0.5 rounded-full inline-flex items-center">
+                                                {% trans "Thanh toán" %}
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <i class="fas fa-check-circle mr-1 text-green-800"></i>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
