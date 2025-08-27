@@ -14,9 +14,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="MonthlyMeterReading",
             fields=[
-                ("service_id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "service_id",
+                    models.AutoField(primary_key=True, serialize=False),
+                ),
                 ("service_month", models.DateTimeField()),
-                ("electricity_index", models.IntegerField(blank=True, null=True)),
+                (
+                    "electricity_index",
+                    models.IntegerField(blank=True, null=True),
+                ),
                 ("water_index", models.IntegerField(blank=True, null=True)),
                 (
                     "status",
@@ -46,9 +52,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="PaymentHistory",
             fields=[
-                ("payment_id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "payment_id",
+                    models.AutoField(primary_key=True, serialize=False),
+                ),
                 ("payment_date", models.DateTimeField()),
-                ("amount_paid", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "amount_paid",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "payment_method",
                     models.CharField(

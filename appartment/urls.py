@@ -31,6 +31,7 @@ from appartment.views.notification_send import (
     resident_send_notification,
     load_users_by_role,
 )
+from .views.profile_views import profile_view, profile_edit_view
 
 urlpatterns = [
     # === CÁC URL TĨNH, CỤ THỂ NHẤT (ƯU TIÊN CAO NHẤT) ===
@@ -39,7 +40,11 @@ urlpatterns = [
     path("logout/", logout_view, name="logout"),
     path("dashboard/", dashboard, name="dashboard"),
     # notification
-    path("notification/load-users/", load_users_by_role, name="load_users_by_role"),
+    path(
+        "notification/load-users/",
+        load_users_by_role,
+        name="load_users_by_role",
+    ),
     # MANAGER URL
     path(
         "manager/send-notification/",
@@ -47,6 +52,15 @@ urlpatterns = [
         name="manager_send_notification",
     ),
     # MANAGER bill
+
+    path(
+        "manager/bills_list",
+        bills_view.BillingView.as_view(),
+        name="bills_list",
+    ),
+    path("profile/", profile_view, name="profile"),
+    path("profile/edit", profile_edit_view, name="profile_edit"),
+
     path(
         "manager/billing/workspace/",
         bills_view.BillingWorkspaceView.as_view(),
@@ -68,7 +82,9 @@ urlpatterns = [
         name="add_adhoc_service",
     ),
     path(
-        "manager/bill/<str:bill_id>/", bills_view.BillDetailView.as_view(), name="bill"
+        "manager/bill/<str:bill_id>/",
+        bills_view.BillDetailView.as_view(),
+        name="bill",
     ),
     # path("bill/<str:bill_id>/update/", bills_view.BillUpdateView.as_view(), name="bill_update"),
     path(
@@ -110,7 +126,11 @@ urlpatterns = [
     path("manager/room_list", room_views.room_list, name="room_list"),
     path("manager/<str:room_id>/", room_views.room_detail, name="room_detail"),
     path("manager/create_room", room_views.create_room, name="create_room"),
-    path("manager/<str:room_id>/edit/", room_views.room_update, name="room_update"),
+    path(
+        "manager/<str:room_id>/edit/",
+        room_views.room_update,
+        name="room_update",
+    ),
     path(
         "room/<str:room_id>/bills/",
         bills_view.RoomBillListView.as_view(),
@@ -163,9 +183,21 @@ urlpatterns = [
         bank_payment_views.create_payment,
         name="create_payment",
     ),
-    path("resident/bank_payment/webhook/", bank_payment_views.payos_webhook, name="payos_webhook"),
-    path("resident/bank_payment/transact_success/", bank_payment_views.payment_success, name="payment_success"),
-    path("resident/bank_payment/transact_cancel/", bank_payment_views.payment_cancel, name="payment_cancel"),
+    path(
+        "resident/bank_payment/webhook/",
+        bank_payment_views.payos_webhook,
+        name="payos_webhook",
+    ),
+    path(
+        "resident/bank_payment/transact_success/",
+        bank_payment_views.payment_success,
+        name="payment_success",
+    ),
+    path(
+        "resident/bank_payment/transact_cancel/",
+        bank_payment_views.payment_cancel,
+        name="payment_cancel",
+    ),
     # RESIDENT room
     path(
         "resident/resident_room_list",
@@ -211,7 +243,9 @@ urlpatterns = [
         name="delete_user",
     ),
     path(
-        "admin/load_districts/", admin_user_view.load_districts, name="load_districts"
+        "admin/load_districts/",
+        admin_user_view.load_districts,
+        name="load_districts",
     ),
     path("admin/load_wards/", admin_user_view.load_wards, name="load_wards"),
     # ADMIN notification

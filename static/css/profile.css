@@ -1,0 +1,361 @@
+/**
+ * Profile Page Styles
+ * Custom CSS for profile page components
+ */
+
+/* Avatar gradients for different roles */
+.avatar-gradient-admin {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.avatar-gradient-manager {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.avatar-gradient-resident {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.avatar-gradient-default {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+/* Form field focus states */
+.form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 
+           focus:outline-none focus:ring-2 focus:ring-offset-0 focus:border-transparent 
+           sm:text-sm transition-colors duration-200;
+}
+
+.form-input:focus {
+    @apply ring-blue-500 border-blue-500;
+}
+
+.form-input.error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+}
+
+/* Status badges */
+.status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-badge.active {
+    @apply bg-green-100 text-green-800;
+}
+
+.status-badge.inactive {
+    @apply bg-red-100 text-red-800;
+}
+
+.status-badge.pending {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+/* Role badges */
+.role-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.role-badge.admin {
+    @apply bg-purple-100 text-purple-800;
+}
+
+.role-badge.manager {
+    @apply bg-pink-100 text-pink-800;
+}
+
+.role-badge.resident {
+    @apply bg-blue-100 text-blue-800;
+}
+
+/* Info boxes for different roles */
+.info-box {
+    @apply p-4 rounded-lg;
+}
+
+.info-box.admin {
+    @apply bg-purple-50;
+}
+
+.info-box.admin .info-icon {
+    @apply text-purple-400;
+}
+
+.info-box.admin .info-text {
+    @apply text-purple-800;
+}
+
+.info-box.admin .info-content {
+    @apply text-purple-700;
+}
+
+.info-box.manager {
+    @apply bg-pink-50;
+}
+
+.info-box.manager .info-icon {
+    @apply text-pink-400;
+}
+
+.info-box.manager .info-text {
+    @apply text-pink-800;
+}
+
+.info-box.manager .info-content {
+    @apply text-pink-700;
+}
+
+.info-box.resident {
+    @apply bg-blue-50;
+}
+
+.info-box.resident .info-icon {
+    @apply text-blue-400;
+}
+
+.info-box.resident .info-text {
+    @apply text-blue-800;
+}
+
+.info-box.resident .info-content {
+    @apply text-blue-700;
+}
+
+/* Button styles */
+.btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md 
+           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 
+           border border-transparent;
+}
+
+.btn-secondary {
+    @apply bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500 
+           border border-gray-300;
+}
+
+.btn-danger {
+    @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-300;
+}
+
+.btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+/* Modal styles */
+.modal-overlay {
+    @apply fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50;
+}
+
+.modal-container {
+    @apply relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white;
+}
+
+.modal-icon {
+    @apply mx-auto flex items-center justify-center h-12 w-12 rounded-full;
+}
+
+.modal-icon.warning {
+    @apply bg-yellow-100;
+}
+
+.modal-icon.error {
+    @apply bg-red-100;
+}
+
+.modal-icon.success {
+    @apply bg-green-100;
+}
+
+.modal-icon.info {
+    @apply bg-blue-100;
+}
+
+/* Field error styles */
+.field-error {
+    @apply mt-1 text-sm text-red-600;
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* Loading states */
+.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast notifications */
+.toast {
+    @apply fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.toast.success {
+    @apply bg-green-500 text-white;
+}
+
+.toast.error {
+    @apply bg-red-500 text-white;
+}
+
+.toast.warning {
+    @apply bg-yellow-500 text-white;
+}
+
+.toast.info {
+    @apply bg-blue-500 text-white;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .modal-container {
+        @apply w-11/12 top-10;
+    }
+    
+    .toast {
+        @apply top-4 left-4 right-4;
+    }
+    
+    .btn {
+        @apply w-full justify-center;
+    }
+    
+    .form-actions {
+        @apply flex-col space-y-3;
+    }
+    
+    .form-actions .btn {
+        @apply w-full;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .profile-card {
+        @apply shadow-none border-none;
+    }
+    
+    .btn {
+        display: none;
+    }
+    
+    .modal-overlay {
+        display: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .form-input {
+        @apply border-2;
+    }
+    
+    .btn {
+        @apply border-2;
+    }
+    
+    .status-badge,
+    .role-badge {
+        @apply border;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    .dark-mode .profile-card {
+        @apply bg-gray-800 border-gray-700;
+    }
+    
+    .dark-mode .form-input {
+        @apply bg-gray-700 border-gray-600 text-white;
+    }
+    
+    .dark-mode .form-input:focus {
+        @apply ring-blue-400 border-blue-400;
+    }
+    
+    .dark-mode .btn-secondary {
+        @apply bg-gray-700 text-gray-200 hover:bg-gray-600 border-gray-600;
+    }
+    
+    .dark-mode .modal-container {
+        @apply bg-gray-800 text-white;
+    }
+}
