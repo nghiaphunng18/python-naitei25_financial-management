@@ -1,3 +1,61 @@
-{% extends "base_resident.html"%} {% load i18n %} {% block content %}
-<h1 class="text-4xl">Content</h1>
+{% extends "base_resident.html"%} 
+{% load i18n %} 
+{% block content %}
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-6">{% trans "Tổng quan cư dân" %}</h1>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white shadow rounded-2xl p-6 flex items-center space-x-4">
+            <div class="p-4 bg-blue-100 text-blue-600 rounded-full">
+                <i class="fas fa-door-open text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500">{% trans "Phòng đang ở" %}</p>
+                <h2 class="text-xl font-bold">{{ current_rooms }}</h2>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-2xl p-6 flex items-center space-x-4">
+            <div class="p-4 bg-red-100 text-red-600 rounded-full">
+                <i class="fas fa-file-invoice-dollar text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500">{% trans "Hóa đơn chưa thanh toán" %}</p>
+                <h2 class="text-xl font-bold">{{ unpaid_bills }}</h2>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-2xl p-6 flex items-center space-x-4">
+            <div class="p-4 bg-gray-200 text-red-600 rounded-full">
+                <i class="fas fa-file-invoice-dollar text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500">{% trans "Hóa đơn nháp cần xác nhận" %}</p>
+                {% if has_pending_drafts %}
+                    <h2 class="text-xl font-bold">{% blocktrans with count=pending_drafts|length %}{{ count }}{% endblocktrans %}</h2>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="mt-8">
+        <h2 class="text-xl font-semibold mb-4">{% trans "Thông báo gần đây" %}</h2>
+        <div class="bg-white shadow rounded-2xl p-4">
+            {% if latest_notifications %}
+                <ul class="divide-y divide-gray-200">
+                    {% for noti in latest_notifications %}
+                        <li class="py-2">
+                            <p class="text-gray-800">{{ noti.title }}</p>
+                            <p class="text-gray-500 text-sm">{{ noti.created_at|date:"d/m/Y H:i" }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-gray-500">{% trans "Chưa có thông báo nào" %}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -4,9 +4,13 @@ from django.utils.translation import gettext as _
 from django.contrib import messages
 
 from appartment.constants import UserRole
+from .admin.dashboard_view import admin_dashboard
+from .resident.dashboard_view import resident_dashboard
+from .manager.manager_dashboard_views import manager_dashboard
 
 from .admin.dashboard_view import admin_dashboard
 from .manager.manager_dashboard_views import manager_dashboard
+
 
 @login_required
 def dashboard(request):
@@ -19,8 +23,7 @@ def dashboard(request):
     elif role == UserRole.APARTMENT_MANAGER.value:
         return manager_dashboard(request, context)
     elif role == UserRole.RESIDENT.value:
-        template_name = "resident/dashboard.html"
-        return render(request, template_name, context)
+        return resident_dashboard(request, context)
     else:
         messages.error(request, _("Bạn không có quyền truy cập trang dashboard này."))
         return redirect("index")

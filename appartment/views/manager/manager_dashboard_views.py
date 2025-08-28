@@ -41,8 +41,6 @@ def manager_dashboard(request, context=None):
     # 5
     total_occupied_rooms = Room.objects.filter(status=RoomStatus.OCCUPIED.value).count()
 
-    
-
     # 6
     # Lọc ra các hóa đơn đã thanh toán cua thang do
     total_paid_bills = bills.filter(status=PaymentStatus.PAID.value)
@@ -54,7 +52,6 @@ def manager_dashboard(request, context=None):
     total_paid_money = (
         total_paid_bills.aggregate(total=Sum("total_amount"))["total"] or 0
     )
-    
 
     # 7
     overdue_bills = Bill.objects.filter(
@@ -70,12 +67,14 @@ def manager_dashboard(request, context=None):
 
     # Tổng hợp theo từng tháng bằng year và month
     for month_key in months.keys():
-        year, month = map(int, month_key.split('-'))
+        year, month = map(int, month_key.split("-"))
 
-        total = Bill.objects.filter(
-            bill_month__year=year,
-            bill_month__month=month
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        total = (
+            Bill.objects.filter(
+                bill_month__year=year, bill_month__month=month
+            ).aggregate(total=Sum("total_amount"))["total"]
+            or 0
+        )
 
         months[month_key] = float(total)
     context.update(
