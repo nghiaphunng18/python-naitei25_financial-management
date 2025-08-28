@@ -77,7 +77,7 @@
                         <tr class="border-b hover:bg-gray-50 transition-colors">
                             <td class="py-4 px-6 text-center">{{ notification.notification_id }}</td>
                             <td class="py-4 px-6 text-center">{{ notification.title }}</td>
-                            <td class="py-4 px-6 text-center">{{ notification.message|truncatewords:20 }}</td>
+                            <td class="py-4 px-6 text-center">{{ notification.message }}</td>
                             <td class="py-4 px-6 text-center">{{ notification.sender.full_name }}</td>
                             <td class="py-4 px-6 text-center">
                                 {% if notification.receiver %}

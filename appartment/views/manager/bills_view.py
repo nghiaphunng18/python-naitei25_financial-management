@@ -25,9 +25,11 @@ from ...models import (
     ElectricWaterTotal,
     BillAdditionalService,
     RentalPrice,
+    RoomResident,
+    Notification,
 )
 from ...utils.permissions import RoleRequiredMixin, role_required
-from ...constants import PaginateNumber, UserRole
+from ...constants import PaymentStatus, UserRole, YEAR_MONTH_DAY_FORMAT
 from ...forms.manager import bills_form
 from dateutil.relativedelta import relativedelta
 import json, decimal
@@ -43,13 +45,17 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
         context = super().get_context_data(**kwargs)
 
         # --- LẤY CÁC THAM SỐ LỌC ---
-        month_str = self.request.GET.get("month", timezone.now().strftime("%Y-%m-%d"))
+        month_str = self.request.GET.get(
+            "month", timezone.now().strftime(YEAR_MONTH_DAY_FORMAT)
+        )
         search_query = self.request.GET.get("q", "")
         billing_status_filter = self.request.GET.get("billing_status", "")
 
         try:
             month_date = (
-                timezone.datetime.strptime(month_str, "%Y-%m-%d").date().replace(day=1)
+                timezone.datetime.strptime(month_str, YEAR_MONTH_DAY_FORMAT)
+                .date()
+                .replace(day=1)
             )
         except (ValueError, TypeError):
             month_date = timezone.now().date().replace(day=1)
@@ -94,7 +100,8 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
                 bill_month__year=month_date.year, bill_month__month=month_date.month
             )
         )
-
+        today = timezone.now().date()
+        start_of_current_month = today.replace(day=1)
         # Lấy cả chỉ số của tháng hiện tại và tháng trước
         current_readings_list = list(
             MonthlyMeterReading.objects.filter(service_month__date=month_date)
@@ -103,11 +110,6 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
             MonthlyMeterReading.objects.filter(service_month__date=previous_month_date)
         )
         drafts_for_month = list(DraftBill.objects.filter(bill_month=month_date))
-        final_bills_for_month = list(
-            Bill.objects.filter(
-                bill_month__year=month_date.year, bill_month__month=month_date.month
-            )
-        )
 
         for room in rooms_qs:
             # tìm trong dữ liệu đã lấy
@@ -222,7 +224,6 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
                 "current_reading_water": (
                     float(current_reading.water_index) if current_reading else ""
                 ),
-                "services_draft_pk": services_draft.pk if services_draft else "new",
                 "subscribed_services": subscribed_services_summary,
             }
 
@@ -249,7 +250,11 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
                 for data in workspace_data
                 if data["billing_status"] == billing_status_filter
             ]
+        overdue_bills = Bill.objects.filter(
+            status__in=PaymentStatus.OVERDUE.value, due_date__lt=today
+        ).select_related("room")
 
+        context["overdue_bills"] = overdue_bills
         context["workspace_data"] = workspace_data
         context["addable_services"] = AdditionalService.objects.all()
         form_initial_data = {}
@@ -278,8 +283,10 @@ class RoomBillListView(RoleRequiredMixin, generic.DetailView):
         month = None
         if month_raw:
             try:
-                parsed_date = datetime.strptime(month_raw.strip(), "%Y-%m-%d").date()
-                month = parsed_date.strftime("%Y-%m-%d")
+                parsed_date = datetime.strptime(
+                    month_raw.strip(), YEAR_MONTH_DAY_FORMAT
+                ).date()
+                month = parsed_date.strftime(YEAR_MONTH_DAY_FORMAT)
             except ValueError:
                 month = None
 
@@ -316,8 +323,10 @@ class BillDetailView(RoleRequiredMixin, generic.DetailView):
         month = None
         if month_raw:
             try:
-                parsed_date = datetime.strptime(month_raw.strip(), "%Y-%m-%d").date()
-                month = parsed_date.strftime("%Y-%m-%d")
+                parsed_date = datetime.strptime(
+                    month_raw.strip(), YEAR_MONTH_DAY_FORMAT
+                ).date()
+                month = parsed_date.strftime(YEAR_MONTH_DAY_FORMAT)
             except ValueError:
                 month = None
 
@@ -490,7 +499,9 @@ class BuildingUtilityTotalView(RoleRequiredMixin, generic.View):
         try:
             # Chuyển đổi dữ liệu sang đúng kiểu
             month_date = (
-                timezone.datetime.strptime(month_str, "%Y-%m-%d").date().replace(day=1)
+                timezone.datetime.strptime(month_str, YEAR_MONTH_DAY_FORMAT)
+                .date()
+                .replace(day=1)
             )
             defaults_data = {
                 "total_electricity": decimal.Decimal(total_electricity_str),
@@ -542,7 +553,9 @@ class SaveMeterReadingView(RoleRequiredMixin, generic.View):
                 request.POST.get("electricity_index")
             )
             new_water_index = decimal.Decimal(request.POST.get("water_index"))
-            month_date = timezone.datetime.strptime(month_str, "%Y-%m-%d").date()
+            month_date = timezone.datetime.strptime(
+                month_str, YEAR_MONTH_DAY_FORMAT
+            ).date()
         except (ValueError, TypeError, decimal.InvalidOperation):
             messages.error(request, _("Dữ liệu nhập vào (số điện/nước) không hợp lệ."))
             return redirect(redirect_url_with_month)
@@ -712,8 +725,10 @@ class DraftBillDetailView(RoleRequiredMixin, generic.DetailView):
         if month_raw:
             try:
                 clean_value = month_raw.strip().split("&")[0]
-                parsed_date = datetime.strptime(clean_value, "%Y-%m-%d").date()
-                month = parsed_date.strftime("%Y-%m-%d")
+                parsed_date = datetime.strptime(
+                    clean_value, YEAR_MONTH_DAY_FORMAT
+                ).date()
+                month = parsed_date.strftime(YEAR_MONTH_DAY_FORMAT)
             except ValueError:
                 month = None
 
@@ -786,6 +801,8 @@ def update_draft_bill_status_view(request, pk):
     draft_bill = get_object_or_404(DraftBill, pk=pk)
     new_status = request.POST.get("status")
 
+    # Lấy month từ query string (nếu có)
+    month = get_month_from_request(request)
     # Kiểm tra xem status mới có hợp lệ không
     valid_statuses = [status.value for status in DraftBill.DraftStatus]
     if new_status in valid_statuses:
@@ -797,7 +814,26 @@ def update_draft_bill_status_view(request, pk):
     else:
         messages.error(request, _("Trạng thái không hợp lệ."))
 
-    return redirect("draft_bill_detail", pk=draft_bill.pk)
+    # Redirect, giữ nguyên month nếu có
+    return redirect(
+        f"{reverse('draft_bill_detail', args=[draft_bill.pk])}?month={month}"
+    )
+
+
+def get_month_from_request(request):
+    """
+    Lấy month ở dạng 'YYYY-MM-DD' từ request.POST hoặc request.GET.
+    Trả về None nếu không có hoặc không hợp lệ.
+    """
+    month_raw = request.POST.get("month") or request.GET.get("month")
+    if not month_raw:
+        return None
+    try:
+        clean_value = month_raw.strip().split("&")[0]
+        parsed_date = datetime.strptime(clean_value, YEAR_MONTH_DAY_FORMAT).date()
+        return parsed_date.strftime(YEAR_MONTH_DAY_FORMAT)
+    except (ValueError, AttributeError):
+        return None
 
 
 # tạo một hàm helper để tái sử dụng logic này
@@ -1007,7 +1043,7 @@ class GenerateFinalBillView(RoleRequiredMixin, generic.View):
             print(_("Room không tồn tại trong DB!"))
             return HttpResponseNotFound(_("Room không tồn tại"))
 
-        month_date = timezone.datetime.strptime(month_str, "%Y-%m-%d").date()
+        month_date = timezone.datetime.strptime(month_str, YEAR_MONTH_DAY_FORMAT).date()
         room = get_object_or_404(Room, pk=room_id)
         redirect_url = f"{reverse('billing_workspace')}?month={month_str}"
 
@@ -1079,3 +1115,67 @@ class GenerateFinalBillView(RoleRequiredMixin, generic.View):
             request, _(f"Đã tạo HĐ cuối cùng thành công cho phòng {room.description}.")
         )
         return redirect(redirect_url)
+
+
+@role_required(UserRole.APARTMENT_MANAGER.value)
+@require_POST
+def send_payment_reminders_view(request):
+    bill_ids = request.POST.getlist("bill_ids")
+
+    if not bill_ids:
+        messages.warning(
+            request, _("Vui lòng chọn ít nhất một hóa đơn để gửi nhắc nhở.")
+        )
+        return redirect("billing_workspace")
+
+    today = timezone.now().date()
+
+    # Truy vấn trực tiếp đến database để lấy tất cả các hóa đơn
+    # thỏa mãn 2 điều kiện:
+    # 1. Trạng thái là 'chưa thanh toán'
+    # 2. VÀ ngày hết hạn (due_date) nhỏ hơn ngày hôm nay
+    overdue_bills = Bill.objects.filter(
+        status__in=PaymentStatus.OVERDUE.value, due_date__lt=today
+    ).select_related("room")
+
+    notifications_created_count = 0
+    for bill in overdue_bills:
+        # Tìm tất cả cư dân trong phòng của hóa đơn đó
+        residents = RoomResident.objects.filter(room=bill.room)
+        for resident in residents:
+            title = (
+                f"Nhắc nhở thanh toán hóa đơn tháng {bill.bill_month.strftime('%m/%Y')}"
+            )
+            message = (
+                f"Chào {resident.user.full_name},\n\n"
+                f"Hệ thống ghi nhận hóa đơn #{bill.bill_id} cho phòng {bill.room.description} "
+                f"với tổng số tiền {bill.total_amount:,.0f} VNĐ đã quá hạn thanh toán.\n\n"
+                f"Vui lòng thanh toán sớm. Cảm ơn bạn."
+            )
+
+            # Tạo thông báo từ Manager gửi đến Cư dân
+            Notification.objects.create(
+                sender=request.user,
+                receiver=resident.user,
+                title=title,
+                message=message,
+            )
+            notifications_created_count += 1
+
+    if notifications_created_count > 0:
+        messages.success(
+            request,
+            _(f"Đã gửi thành công {notifications_created_count} thông báo nhắc nhở."),
+        )
+    else:
+        messages.warning(
+            request, _("Không có hóa đơn hợp lệ nào được chọn để gửi thông báo.")
+        )
+
+    # Chuyển hướng lại trang workspace với tháng đã chọn (nếu có)
+    month_str = request.POST.get("month_param", "")
+    redirect_url = reverse("billing_workspace")
+    if month_str:
+        redirect_url = f"{redirect_url}?month={month_str}"
+
+    return redirect(redirect_url)
