@@ -20,4 +20,4 @@ class RentalPrice(models.Model):
         db_table = "rental_prices"
 
     def __str__(self):
-        return f"Price {self.price} for Room {self.room_id}"
+        return f"Price {self.price:.2f} for Room {self.room_id}"

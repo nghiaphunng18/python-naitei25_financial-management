@@ -204,5 +204,5 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 # setup cron
 CRONJOBS = [
-    ("5 5 * * *", "appartment.tasks.send_bills.send_monthly_bills"),
+    ("25 15 * * *", "appartment.tasks.send_bills.send_monthly_bills"),
 ]

@@ -6,7 +6,11 @@ class RoomResident(models.Model):
     room = models.ForeignKey(
         "Room", on_delete=models.RESTRICT, db_column="room_id", related_name="residents"
     )
-    user = models.ForeignKey("User", on_delete=models.RESTRICT, db_column="user_id")
+    user = models.ForeignKey(
+        "User",
+        on_delete=models.RESTRICT,
+        db_column="user_id",
+    )
     move_in_date = models.DateTimeField(auto_now_add=True)
     move_out_date = models.DateTimeField(null=True, blank=True)
 
