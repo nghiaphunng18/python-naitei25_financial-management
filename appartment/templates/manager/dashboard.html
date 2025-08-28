@@ -1,3 +1,95 @@
-{% extends "base_manager.html"%} {% load i18n %} {% block content %}
-<h1 class="text-4xl">Content</h1>
+{% extends "base_manager.html"%} 
+{% load i18n %} 
+{% load humanize %}
+{% load static %} 
+{% block content %}
+<div class="bg-blue-50 p-4">
+    <div class="grid grid-cols-4 gap-6">
+        <div class="bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-3xl font-bold">{{total_rooms}}</p>
+            <p class="text-gray-600">{% trans "Tổng số phòng" %}</p>
+        </div>
+        <div class="bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-3xl font-bold">{{total_residents}}</p>
+            <p class="text-gray-600">{% trans "Tổng số cư dân" %}</p>
+        </div>
+        <div class="bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-3xl font-bold">{{total_bills}}</p>
+            <p class="text-gray-600">{% trans "Tổng số hóa đơn tháng " %} {{ total_bill_month | date:"m/Y"}}</p>
+        </div>
+        <div class="bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-3xl font-bold">{{total_bill_money | floatformat:0 | intcomma }} {% trans "đ"%}</p>
+            <p class="text-gray-600">{% trans "Tổng doanh thu tháng " %} {{ total_bill_month | date:"m/Y"}}</p>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 gap-6 pt-6">
+        <div class="w-full bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-xl font-bold">{% trans "Tỉ lệ phòng đã thuê" %}</p>
+            <div class="h-52 w-full flex justify-center items-center">
+                <canvas id="roomsPieChart" 
+                    data-occupied="{{ total_occupied_rooms }}" 
+                    data-total="{{ total_rooms }}">
+                </canvas>
+            </div>
+        </div>
+        <div class="w-full bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-xl font-bold">{% trans "Tỉ lệ hóa đơn/số tiền đã trả" %}</p>
+            <div class="h-52 w-full flex justify-center items-center">
+                <canvas id="billsPieChart" 
+                    data-paid="{{ total_paid_count }}" 
+                    data-total="{{ total_bills }}">
+                </canvas>
+                <canvas id="moneyPieChart" 
+                    data-paid="{{ total_paid_money }}" 
+                    data-total="{{ total_bill_money }}">
+                </canvas>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 gap-6 pt-6">
+        <div class="w-full bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-xl font-bold pb-2">{% trans "Các hóa đơn đã hết hạn" %}</p>
+            <table class="table-auto w-full text-left">
+                <thead>
+                    <tr class="border-b border-gray-300">
+                        <th class="px-4 py-2">{% trans "Phòng" %}</th>
+                        <th class="px-4 py-2">{% trans "Tháng" %}</th>
+                        <th class="px-4 py-2">{% trans "Số tiền" %}</th>
+                        <th class="px-4 py-2">{% trans "Hạn" %}</th>
+                        <th class="px-4 py-2">{% trans "Trạng thái" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in overdue_bills %}
+                    <tr class="border-b border-gray-300">
+                        <td class="px-4 py-2">{{ bill.room.room_id }}</td>
+                        <td class="px-4 py-2">{{ bill.bill_month|date:"m/Y" }}</td>
+                        <td class="px-4 py-2">{{ bill.total_amount|floatformat:0|intcomma }}</td>
+                        <td class="px-4 py-2">{{ bill.due_date|date:"d/m/Y" }}</td>
+                        <td class="px-4 py-2">
+                            {% if bill.status == "unpaid" %}
+                                <span class="text-red-600 font-bold text-xs">{% trans "Unpaid" %}</span>
+                            {% else %}
+                                <span class="text-green-600 font-bold text-xs">{% trans "Paid" %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-gray-500">{% trans "Không có hóa đơn quá hạn" %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="w-full bg-white border-1 border-gray-100 p-4 rounded-lg shadow-lg">
+            <p class="text-xl font-bold pb-2">{% trans "Thống kê doanh thu 6 tháng gần đây" %}</p>
+            <canvas id="billsBarChart"
+                data-labels='{{ months_labels|safe }}'
+                data-values='{{ months_amounts|safe }}'>
+            </canvas>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/manager/dashboard.js' %}"></script>
 {% endblock %}
