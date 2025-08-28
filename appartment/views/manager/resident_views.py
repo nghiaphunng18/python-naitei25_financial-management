@@ -147,9 +147,10 @@ def leave_room(request, user_id):
 
     # Cập nhật ngày chuyển đi là hôm nay
     current_room_resident.move_out_date = timezone.now()
-    room = current_room_resident.room
+    current_room_resident.save()  # Lưu trước khi kiểm tra remaining
 
     # Nếu cư dân này là người cuối cùng rời phòng, cập nhật trạng thái phòng
+    room = current_room_resident.room
     remaining = RoomResident.objects.filter(
         room=room, move_out_date__isnull=True
     ).count()
