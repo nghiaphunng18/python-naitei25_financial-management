@@ -52,7 +52,6 @@ urlpatterns = [
         name="manager_send_notification",
     ),
     # MANAGER bill
-
     path(
         "manager/bills_list",
         bills_view.BillingView.as_view(),
@@ -60,7 +59,6 @@ urlpatterns = [
     ),
     path("profile/", profile_view, name="profile"),
     path("profile/edit", profile_edit_view, name="profile_edit"),
-
     path(
         "manager/billing/workspace/",
         bills_view.BillingWorkspaceView.as_view(),

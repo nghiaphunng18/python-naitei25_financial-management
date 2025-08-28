@@ -96,7 +96,7 @@
                                 {% if item.notification.status == 'unread' %}
                                     <form method="post" action="{% url 'mark_notification_read' item.notification.notification_id %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">{% trans "Đánh dấu đã đọc" %}</button>
+                                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">{% trans "Đã đọc" %}</button>
                                     </form>
                                 {% endif %}
                             </td>
