@@ -13,9 +13,9 @@
       </a>
     </li>
     {% with request.resolver_match.url_name as current_url %}
-    <li class="w-full {% if current_url in 'bills_list bill_create bill bill_update bill_delete bill_confirm_payment bill_print' %}bg-gray-500{% endif %} hover:bg-gray-500">
+    <li class="w-full {% if current_url in 'billing_workspace utility_totals bills_list bill_create bill bill_update bill_delete bill_confirm_payment bill_print' %}bg-gray-500{% endif %} hover:bg-gray-500">
     {% endwith %}
-      <a class="flex items-center gap-2 px-4 py-2" href="{% current_workspace_url %}">
+      <a class="flex items-center gap-2 px-4 py-2" href="{% url 'billing_workspace' %}">
         <i class="fa-solid fa-money-bills"></i>
         <span>{% trans "Quản lý hóa đơn" %}</span>
       </a>

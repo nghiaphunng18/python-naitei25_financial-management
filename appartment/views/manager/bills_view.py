@@ -55,7 +55,7 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
             month_date = timezone.now().date().replace(day=1)
             messages.error(
                 self.request,
-                "Định dạng tháng trên URL không hợp lệ, đã quay về tháng hiện tại.",
+                _("Định dạng tháng trên URL không hợp lệ, đã quay về tháng hiện tại."),
             )
 
         context["selected_month"] = month_date
@@ -904,7 +904,7 @@ class AddAdhocServiceView(RoleRequiredMixin, generic.View):
                     return JsonResponse(
                         {
                             "status": "error",
-                            "messages": _(
+                            "message": _(
                                 f"Không thể thêm dịch vụ theo người cho phòng trống."
                             ),
                         },
@@ -914,7 +914,7 @@ class AddAdhocServiceView(RoleRequiredMixin, generic.View):
                     return JsonResponse(
                         {
                             "status": "error",
-                            "messages": _(
+                            "message": _(
                                 f"Đã đạt số lượng tối đa ({num_residents}) cho dịch vụ '{service_to_add.name}'."
                             ),
                         },

@@ -158,7 +158,7 @@
                                         
                                         {# CÁC INPUT ẨN NÀY SẼ ĐƯỢC JAVASCRIPT ĐIỀN VÀO #}
                                         <input type="hidden" name="room" :value="modalData.room_pk">
-                                        <input type="hidden" name="bill_month" :value="selectedMonth.substring(0, 7)">
+                                        <input type="hidden" name="bill_month" :value="selectedMonth.slice(0, 7)">
 
                                         <h4 class="font-medium">{% trans "Thêm dịch vụ phát sinh" %}</h4>
                                         <div class="flex items-end space-x-4 mt-2">
@@ -270,6 +270,15 @@
 {% block javascript %}
 <script src="{% static 'js/manager/custom_calendar.js' %}"></script>
 {% autoescape off %}
+<script>
+    window.APP_CONFIG = {
+        csrfToken: "{{ csrf_token }}",
+        addAdhocServiceUrl: "{% url 'add_adhoc_service' %}",
+        removeServiceUrl: "{% url 'remove_service_from_draft' pk=0 %}",  // placeholder pk=0
+        billingWorkspaceUrl: "{% url 'billing_workspace' %}",
+        selectedMonth: "{{ selected_month|date:'Y-m-d' }}"
+    };
+</script>
 <script src="{% static 'js/manager/bill_workspace.js' %}"></script>
 {% endautoescape %}
 {% endblock %}

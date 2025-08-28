@@ -1,6 +1,7 @@
 {% extends "base_manager.html" %}
 {% load i18n %}
 {% load custom_bill_status %}
+{% load bill_filters %}
 
 {% block content %}
 <main class="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
@@ -46,8 +47,8 @@
                             <td class="p-2 text-right">{{ r.old }}</td>
                             <td class="p-2 text-right">{{ r.new }}</td>
                             <td class="p-2 text-right">{{ r.consumption }}</td>
-                            <td class="p-2 text-right">{{ r.unit_price|currency }}</td>
-                            <td class="p-2 text-right font-semibold">{{ r.amount|currency }}</td>
+                            <td class="p-2 text-right">{{ r.unit_price|format_currency }}</td>
+                            <td class="p-2 text-right font-semibold">{{ r.amount|format_currency }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -71,9 +72,9 @@
                             <tr class="border-t">
                             <td class="p-2 font-medium">{{ s.name }}</td>
                             <td class="p-2">{{ s.type }}</td>
-                            <td class="p-2 text-right">{{ s.unit_price|currency }}</td>
+                            <td class="p-2 text-right">{{ s.unit_price|format_currency }}</td>
                             <td class="p-2 text-right">{{ s.quantity }}</td>
-                            <td class="p-2 text-right font-semibold">{{ s.total|currency }}</td>
+                            <td class="p-2 text-right font-semibold">{{ s.total|format_currency }}</td>
                             </tr>
                         {% empty %}
                             <tr><td colspan="5" class="p-3 text-center text-gray-500 italic">{% trans "Chưa có dịch vụ." %}</td></tr>
@@ -84,7 +85,7 @@
 
                     <div class="mt-4 p-3 border-t text-right">
                         <span class="font-bold text-lg text-gray-800 dark:text-white">{% trans "Tổng cộng:" %} </span>
-                        <span class="font-extrabold text-indigo-600 text-xl">{{ grand_total|currency }}</span>
+                        <span class="font-extrabold text-indigo-600 text-xl">{{ grand_total|format_currency }}</span>
                     </div>
                 </div>
             </div>
