@@ -251,7 +251,7 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
                 if data["billing_status"] == billing_status_filter
             ]
         overdue_bills = Bill.objects.filter(
-            status__in=PaymentStatus.OVERDUE.value, due_date__lt=today
+            status=PaymentStatus.UNPAID.value, due_date__lt=today
         ).select_related("room")
 
         context["overdue_bills"] = overdue_bills
@@ -1135,7 +1135,7 @@ def send_payment_reminders_view(request):
     # 1. Trạng thái là 'chưa thanh toán'
     # 2. VÀ ngày hết hạn (due_date) nhỏ hơn ngày hôm nay
     overdue_bills = Bill.objects.filter(
-        status__in=PaymentStatus.OVERDUE.value, due_date__lt=today
+        status=PaymentStatus.UNPAID.value, due_date__lt=today
     ).select_related("room")
 
     notifications_created_count = 0
