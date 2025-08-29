@@ -78,7 +78,7 @@ class CreateRoomForm(forms.ModelForm):
         max_occupants = self.cleaned_data["max_occupants"]
         if max_occupants < MIN_OCCUPANTS:
             raise forms.ValidationError(
-                _("Số người tối thiểu phải ít nhất là %s.") % MIN_OCCUPANTS
+                _("Số người tối thiểu phải ít nhất là %s.") % MIN_OCCUPANTS
             )
         if max_occupants > MAX_OCCUPANTS:
             raise forms.ValidationError(
@@ -154,7 +154,7 @@ class UpdateRoomForm(forms.ModelForm):
         # Kiểm tra giá trị cơ bản
         if max_occupants < MIN_OCCUPANTS:
             raise forms.ValidationError(
-                _("Số người tối đa phải ít nhất là %s.") % MIN_OCCUPANTS
+                _("Số người tối thiểu phải ít nhất là %s.") % MIN_OCCUPANTS
             )
 
         if max_occupants > MAX_OCCUPANTS:

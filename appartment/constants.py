@@ -105,7 +105,7 @@ class ElectricWaterStatus(Enum):
 
 
 MIN_OCCUPANTS = 1
-MAX_OCCUPANTS = 50
+MAX_OCCUPANTS = 10
 
 PRICE_CHANGES_PER_PAGE_MAX = 5
 HISTORY_PER_PAGE_MAX = 5
@@ -118,7 +118,9 @@ class UserRole(Enum):
 
     @classmethod
     def choices(cls):
-        return [(role.value, role.name.replace("_", " ").title()) for role in cls]
+        return [
+            (role.value, role.name.replace("_", " ").title()) for role in cls
+        ]
 
 
 class PaginateNumber(Enum):

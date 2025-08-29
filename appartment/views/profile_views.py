@@ -28,7 +28,10 @@ def profile_view(request):
     )
 
     # Get role name and colors based on role
+    known_roles = ["role_resident", "role_apartment_manager", "role_admin"]
     role_name = user.role.role_name if user.role else "Chưa xác định"
+    if role_name not in known_roles:
+        role_name = "Chưa xác định"
     colors = get_role_colors(role_name)
 
     context = {
@@ -69,14 +72,15 @@ def profile_edit_view(request):
         if form.is_valid():
             # Check if anything actually changed
             if form.has_changed():
-                form.save()
-                messages.success(
-                    request, "Thông tin cá nhân đã được cập nhật thành công!"
-                )
+                try:
+                    form.save()
+                    messages.success(request, "Thông tin cá nhân đã được cập nhật thành công!")
+                    return redirect("profile")
+                except Exception as e:
+                    messages.error(request, f"Lỗi khi cập nhật: {str(e)}")
             else:
                 messages.info(request, "Không có thông tin nào được thay đổi.")
-
-            return redirect("profile")
+                return redirect("profile")
         else:
             # If form is invalid, show errors
             for field, errors in form.errors.items():
