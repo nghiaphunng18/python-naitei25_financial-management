@@ -243,6 +243,12 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
             # room_info["billing_status"] = billing_status
             workspace_data.append(room_info)
 
+        overdue_bills = Bill.objects.filter(
+            status=PaymentStatus.UNPAID.value, due_date__lt=today
+        ).select_related("room")
+
+        context["overdue_bills"] = overdue_bills
+
         # Lọc lần cuối dựa trên trạng thái tổng hợp (nếu có)
         if billing_status_filter:
             workspace_data = [
@@ -250,11 +256,6 @@ class BillingWorkspaceView(RoleRequiredMixin, generic.TemplateView):
                 for data in workspace_data
                 if data["billing_status"] == billing_status_filter
             ]
-        overdue_bills = Bill.objects.filter(
-            status=PaymentStatus.UNPAID.value, due_date__lt=today
-        ).select_related("room")
-
-        context["overdue_bills"] = overdue_bills
         context["workspace_data"] = workspace_data
         context["addable_services"] = AdditionalService.objects.all()
         form_initial_data = {}
@@ -1024,6 +1025,65 @@ class AddAdhocServiceView(RoleRequiredMixin, generic.View):
             )
 
 
+# Gửi thông báo nhắc nhở thanh toán cho các hóa đơn quá hạn
+@role_required(UserRole.APARTMENT_MANAGER.value)
+@require_POST
+def send_payment_reminders_view(request):
+    bill_ids = request.POST.getlist("bill_ids")
+
+    if not bill_ids:
+        messages.warning(request, _("Vui lòng chọn ít nhất một hóa đơn để nhắc nhở."))
+        return redirect("billing_workspace")
+
+    today = timezone.now().date()
+
+    overdue_bills = Bill.objects.filter(
+        status=PaymentStatus.UNPAID.value, due_date__lt=today
+    ).select_related("room")
+
+    notifications_created_count = 0
+    for bill in overdue_bills:
+        # Tìm tất cả cư dân trong phòng của hóa đơn đó
+        residents = RoomResident.objects.filter(room=bill.room)
+        for resident in residents:
+            title = (
+                f"Nhắc nhở thanh toán hóa đơn tháng {bill.bill_month.strftime('%m/%Y')}"
+            )
+            message = (
+                f"Chào {resident.user.full_name},\n\n"
+                f"Hệ thống ghi nhận hóa đơn #{bill.bill_id} cho phòng {bill.room.description} "
+                f"với tổng số tiền {bill.total_amount:,.0f} VNĐ đã quá hạn thanh toán.\n\n"
+                f"Vui lòng thanh toán sớm. Cảm ơn bạn."
+            )
+
+            # Tạo thông báo từ Manager gửi đến Cư dân
+            Notification.objects.create(
+                sender=request.user,
+                receiver=resident.user,
+                title=title,
+                message=message,
+            )
+            notifications_created_count += 1
+
+    if notifications_created_count > 0:
+        messages.success(
+            request,
+            _(f"Đã gửi thành công {notifications_created_count} thông báo nhắc nhở."),
+        )
+    else:
+        messages.warning(
+            request, _("Không có hóa đơn hợp lệ nào được chọn để gửi thông báo.")
+        )
+
+    # Chuyển hướng lại trang workspace với tháng đã chọn
+    month_str = request.POST.get("month_param", "")
+    redirect_url = reverse("billing_workspace")
+    if month_str:
+        redirect_url = f"{redirect_url}?month={month_str}"
+
+    return redirect(redirect_url)
+
+
 class GenerateFinalBillView(RoleRequiredMixin, generic.View):
     allowed_roles = UserRole.APARTMENT_MANAGER.value
 
@@ -1115,67 +1175,3 @@ class GenerateFinalBillView(RoleRequiredMixin, generic.View):
             request, _(f"Đã tạo HĐ cuối cùng thành công cho phòng {room.description}.")
         )
         return redirect(redirect_url)
-
-
-@role_required(UserRole.APARTMENT_MANAGER.value)
-@require_POST
-def send_payment_reminders_view(request):
-    bill_ids = request.POST.getlist("bill_ids")
-
-    if not bill_ids:
-        messages.warning(
-            request, _("Vui lòng chọn ít nhất một hóa đơn để gửi nhắc nhở.")
-        )
-        return redirect("billing_workspace")
-
-    today = timezone.now().date()
-
-    # Truy vấn trực tiếp đến database để lấy tất cả các hóa đơn
-    # thỏa mãn 2 điều kiện:
-    # 1. Trạng thái là 'chưa thanh toán'
-    # 2. VÀ ngày hết hạn (due_date) nhỏ hơn ngày hôm nay
-    overdue_bills = Bill.objects.filter(
-        status=PaymentStatus.UNPAID.value, due_date__lt=today
-    ).select_related("room")
-
-    notifications_created_count = 0
-    for bill in overdue_bills:
-        # Tìm tất cả cư dân trong phòng của hóa đơn đó
-        residents = RoomResident.objects.filter(room=bill.room)
-        for resident in residents:
-            title = (
-                f"Nhắc nhở thanh toán hóa đơn tháng {bill.bill_month.strftime('%m/%Y')}"
-            )
-            message = (
-                f"Chào {resident.user.full_name},\n\n"
-                f"Hệ thống ghi nhận hóa đơn #{bill.bill_id} cho phòng {bill.room.description} "
-                f"với tổng số tiền {bill.total_amount:,.0f} VNĐ đã quá hạn thanh toán.\n\n"
-                f"Vui lòng thanh toán sớm. Cảm ơn bạn."
-            )
-
-            # Tạo thông báo từ Manager gửi đến Cư dân
-            Notification.objects.create(
-                sender=request.user,
-                receiver=resident.user,
-                title=title,
-                message=message,
-            )
-            notifications_created_count += 1
-
-    if notifications_created_count > 0:
-        messages.success(
-            request,
-            _(f"Đã gửi thành công {notifications_created_count} thông báo nhắc nhở."),
-        )
-    else:
-        messages.warning(
-            request, _("Không có hóa đơn hợp lệ nào được chọn để gửi thông báo.")
-        )
-
-    # Chuyển hướng lại trang workspace với tháng đã chọn (nếu có)
-    month_str = request.POST.get("month_param", "")
-    redirect_url = reverse("billing_workspace")
-    if month_str:
-        redirect_url = f"{redirect_url}?month={month_str}"
-
-    return redirect(redirect_url)
