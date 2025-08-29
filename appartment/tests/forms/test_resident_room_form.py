@@ -12,7 +12,9 @@ class ResidentRoomFormTest(TestCase):
     def setUp(self):
         # Tạo Role
         self.resident_role = Role.objects.create(
-            role_id=1, role_name=UserRole.RESIDENT.value, description="Resident role"
+            role_id=1,
+            role_name=UserRole.RESIDENT.value,
+            description="Resident role",
         )
 
         # Tạo User
@@ -51,13 +53,16 @@ class ResidentRoomFormTest(TestCase):
         self.assertEqual(form.fields["room"].label, _("Phòng"))
         self.assertEqual(form.fields["room"].empty_label, None)
         self.assertEqual(
-            form.fields["room"].widget.attrs["class"], "w-full p-2 border rounded"
+            form.fields["room"].widget.attrs["class"],
+            "w-full p-2 border rounded",
         )
         # Kiểm tra queryset chỉ chứa phòng AVAILABLE và OCCUPIED
         expected_rooms = Room.objects.filter(
             status__in=[RoomStatus.AVAILABLE.value, RoomStatus.OCCUPIED.value]
         ).values_list("room_id", flat=True)
-        form_rooms = form.fields["room"].queryset.values_list("room_id", flat=True)
+        form_rooms = form.fields["room"].queryset.values_list(
+            "room_id", flat=True
+        )
         self.assertEqual(list(form_rooms), list(expected_rooms))
 
     def test_form_initialization_with_resident(self):
@@ -69,7 +74,9 @@ class ResidentRoomFormTest(TestCase):
         expected_rooms = Room.objects.filter(
             status__in=[RoomStatus.AVAILABLE.value, RoomStatus.OCCUPIED.value]
         ).values_list("room_id", flat=True)
-        form_rooms = form.fields["room"].queryset.values_list("room_id", flat=True)
+        form_rooms = form.fields["room"].queryset.values_list(
+            "room_id", flat=True
+        )
         self.assertEqual(list(form_rooms), list(expected_rooms))
 
     def test_valid_form_submission(self):
@@ -91,7 +98,9 @@ class ResidentRoomFormTest(TestCase):
         """Kiểm tra form khi phòng đã đầy"""
         # Thêm 2 cư dân vào phòng để đạt max_occupants
         RoomResident.objects.create(
-            user=self.resident, room=self.room_occupied, move_in_date=timezone.now()
+            user=self.resident,
+            room=self.room_occupied,
+            move_in_date=timezone.now(),
         )
         RoomResident.objects.create(
             user=self.another_resident,
@@ -104,13 +113,16 @@ class ResidentRoomFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("__all__", form.errors)
         self.assertEqual(
-            form.errors["__all__"], [_("Phòng đã đầy, không thể gán thêm cư dân.")]
+            form.errors["__all__"],
+            [_("Phòng đã đầy, không thể gán thêm cư dân.")],
         )
 
     def test_form_room_maintenance_not_in_queryset(self):
         """Kiểm tra phòng MAINTENANCE không xuất hiện trong queryset"""
         form = ResidentRoomForm(resident=self.resident)
-        room_ids = form.fields["room"].queryset.values_list("room_id", flat=True)
+        room_ids = form.fields["room"].queryset.values_list(
+            "room_id", flat=True
+        )
         self.assertNotIn(self.room_maintenance.room_id, room_ids)
 
     def test_clean_method_no_room(self):
