@@ -5,15 +5,20 @@
 {% load humanize %}
 {% load bill_filters %}
 
-<div class="container mx-auto mt-6 px-4">
+<div x-data="{ isModalOpen: false }" class="container mx-auto mt-6 px-4">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">
             <i class="fas fa-file-invoice-dollar text-blue-500 mr-2"></i>
             {% trans "Lịch sử hóa đơn" %}
         </h1>
+        {% if has_pending_drafts %}
+            <button @click="isModalOpen = true" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md flex items-center">
+                <i class="fas fa-bell animate-pulse mr-2"></i>
+                {% blocktrans with count=pending_drafts|length %}Bạn có {{ count }} hóa đơn nháp cần xác nhận{% endblocktrans %}
+            </button>
+        {% endif %}
     </div>
-
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg p-6 text-center shadow-lg">
@@ -162,6 +167,130 @@
             <h3 class="text-xl font-semibold text-gray-600 mb-2">{% trans "Không có hóa đơn nào" %}</h3>
             <p class="text-gray-500">{% trans "Bạn chưa có hóa đơn nào hoặc chưa từng ở phòng nào." %}</p>
         </div>
+    {% endif %}
+    {% if has_pending_drafts %}
+    <div x-show="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" style="display: none;">
+        <div @click.away="isModalOpen = false" @keydown.escape.window="isModalOpen = false" class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
+            <div class="flex justify-between items-center">
+                 <h2 class="text-2xl font-bold mb-4">{% trans "Xác nhận Hóa đơn nháp" %}</h2>
+                 <button @click="isModalOpen = false" class="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <p class="text-sm text-gray-600 mb-6">{% trans "Vui lòng kiểm tra và xác nhận các chi phí dưới đây." %}</p>
+            
+            <div class="space-y-6">
+                {% for draft in pending_drafts %}
+                <div class="border p-4 rounded-lg" x-data="{ isRejecting: false }">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-bold">{{ draft.get_draft_type_display }} - {% trans "Tháng" %} {{ draft.bill_month|date:"m/Y" }}</p>
+                            <p class="text-xl font-semibold text-blue-600">{{ draft.total_amount|intcomma }} VNĐ</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <form action="{% url 'resident_confirm_draft_bill' draft.pk %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">{% trans "Xác nhận" %}</button>
+                            </form>
+                            <button @click="isRejecting = !isRejecting" class="bg-red-500 text-white px-4 py-2 rounded">{% trans "Từ chối" %}</button>
+                        </div>
+                    </div>
+                    <div x-show="isRejecting" x-transition class="mt-4">
+                        <form action="{% url 'resident_reject_draft_bill' draft.pk %}" method="post">
+                            {% csrf_token %}
+                            <label for="rejection_reason_{{ draft.pk }}" class="block text-sm font-medium">{% trans "Lý do từ chối" %}:</label>
+                            <textarea name="rejection_reason" id="rejection_reason_{{ draft.pk }}" rows="2" class="w-full border rounded p-2 mt-1" required></textarea>
+                            <div class="text-right mt-2">
+                                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded text-sm">{% trans "Gửi phản hồi" %}</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="mt-4 overflow-x-auto">
+
+                        {% if draft.draft_type == 'ELECTRIC_WATER' %}
+                            <!-- BẢNG ĐIỆN NƯỚC -->
+                            <table class="w-full table-auto text-sm border">
+                                <thead class="bg-gray-100">
+                                    <tr class="text-left">
+                                        <th class="p-2">{% trans "Hạng mục" %}</th>
+                                        <th class="p-2">{% trans "Chỉ số cũ" %}</th>
+                                        <th class="p-2">{% trans "Chỉ số mới" %}</th>
+                                        <th class="p-2">{% trans "Tiêu thụ" %}</th>
+                                        <th class="p-2">{% trans "Đơn giá" %}</th>
+                                        <th class="p-2 text-right">{% trans "Thành tiền" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-2 font-medium">{% trans "Điện" %}</td>
+                                        <td class="p-2">{{ draft.details.old_electric_index }}</td>
+                                        <td class="p-2">{{ draft.details.new_electric_index }}</td>
+                                        <td class="p-2">{{ draft.details.electric_consumption }} kWh</td>
+                                        <td class="p-2">{{ draft.details.electric_unit_price|intcomma }} VNĐ</td>
+                                        <td class="p-2 text-right font-semibold">{{ draft.details.electric_cost|intcomma }} VNĐ</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2 font-medium">{% trans "Nước" %}</td>
+                                        <td class="p-2">{{ draft.details.old_water_index }}</td>
+                                        <td class="p-2">{{ draft.details.new_water_index }}</td>
+                                        <td class="p-2">{{ draft.details.water_consumption }} m³</td>
+                                        <td class="p-2">{{ draft.details.water_unit_price|intcomma }} VNĐ</td>
+                                        <td class="p-2 text-right font-semibold">{{ draft.details.water_cost|intcomma }} VNĐ</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-gray-50">
+                                    <tr>
+                                        <td colspan="5" class="p-2 text-right font-bold">{% trans "TỔNG CỘNG" %}</td>
+                                        <td class="p-2 text-right font-bold text-blue-600">{{ draft.total_amount|intcomma }} VNĐ</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                        {% elif draft.draft_type == 'SERVICES' %}
+                            <!-- BẢNG DỊCH VỤ -->
+                            <table class="w-full table-auto text-sm border">
+                                <thead class="bg-gray-100">
+                                    <tr class="text-left">
+                                        <th class="p-2">{% trans "Tên Dịch vụ" %}</th>
+                                        <th class="p-2">{% trans "Loại hình" %}</th>
+                                        <th class="p-2">{% trans "Số lượng" %}</th>
+                                        <th class="p-2">{% trans "Đơn giá" %}</th>
+                                        <th class="p-2 text-right">{% trans "Thành tiền" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service in draft.details.services %}
+                                    <tr>
+                                        <td class="p-2 font-medium">{{ service.name }}</td>
+                                        <td class="p-2">{{ service.type }}</td>
+                                        <td class="p-2">
+                                            {% if service.type|upper == 'PER_PERSON' %}
+                                                {{ service.num_residents }}
+                                            {% else %}
+                                                1
+                                            {% endif %}
+                                        </td>
+                                        <td class="p-2">{{ service.unit_price|intcomma }} VNĐ</td>
+                                        <td class="p-2 text-right font-semibold">{{ service.cost|intcomma }} VNĐ</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="bg-gray-50">
+                                    <tr>
+                                        <td colspan="4" class="p-2 text-right font-bold">{% trans "TỔNG CỘNG" %}</td>
+                                        <td class="p-2 text-right font-bold text-blue-600">{{ draft.total_amount|intcomma }} VNĐ</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                        {% else %}
+                            <!-- TRƯỜNG HỢP KHÁC -->
+                            <p class="italic text-gray-500">{% trans "Không có chi tiết hiển thị." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     {% endif %}
 </div>
 

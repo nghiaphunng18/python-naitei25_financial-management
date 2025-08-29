@@ -1,6 +1,6 @@
 from django import template
 from ..constants import PaymentStatus
-from ..models import DraftBill
+from ..models import DraftBill, Bill
 from django.utils import timezone
 from django.urls import reverse
 
@@ -12,19 +12,35 @@ register = template.Library()
 def display_bill_status(bill, style="default"):
     """
     Template tag này hiển thị trạng thái hóa đơn với các style khác nhau.
-    - style='default': Dạng chữ lớn (dùng cho trang chi tiết).
-    - style='badge': Dạng viên thuốc/badge (dùng cho trang danh sách).
+    Nó sẽ tự động chuyển trạng thái 'Chưa thanh toán' thành 'Quá hạn'
+    nếu tháng của hóa đơn nhỏ hơn tháng hiện tại.
     """
     status_text = ""
     css_class = ""
-    status_value = bill.status
 
-    # Chuẩn bị các biến text
-    if status_value == PaymentStatus.PAID.value:
+    # Lấy trạng thái gốc từ database và chuyển thành chữ hoa để dễ so sánh
+    effective_status = bill.status
+
+    today = timezone.now().date()
+    if hasattr(bill, "due_date") and bill.due_date:
+        # Chuyển đổi due_date thành đối tượng date nếu nó là datetime
+        due_date_as_date = bill.due_date
+        if isinstance(due_date_as_date, timezone.datetime):
+            due_date_as_date = due_date_as_date.date()
+
+        # Nếu hóa đơn chưa thanh toán VÀ ngày hết hạn đã qua so với hôm nay
+        if effective_status in PaymentStatus.UNPAID.value and due_date_as_date < today:
+            # Tự động coi trạng thái hiển thị là 'QUÁ HẠN'
+            effective_status = PaymentStatus.OVERDUE.value
+
+    # Chuẩn bị các biến text dựa trên trạng thái hiệu lực (effective_status)
+    if effective_status == PaymentStatus.PAID.value:
         status_text = "Đã thanh toán"
-    elif status_value == PaymentStatus.UNPAID.value:
+    elif effective_status == PaymentStatus.UNPAID.value:
         status_text = "Chưa thanh toán"
-    elif status_value == PaymentStatus.OVERDUE.value:
+    elif (
+        effective_status == PaymentStatus.OVERDUE.value
+    ):  # OVRD là viết tắt của Overdue
         status_text = "Quá hạn"
     else:
         status_text = bill.status
@@ -32,22 +48,22 @@ def display_bill_status(bill, style="default"):
     # Dựa vào tham số 'style' để chọn bộ class CSS phù hợp
     if style == "badge":
         base_badge_class = "px-3 py-1 text-xs leading-5 font-semibold rounded-full"
-        if status_value == PaymentStatus.PAID.value:
+        if effective_status == PaymentStatus.PAID.value:
             css_class = f"{base_badge_class} bg-green-100 text-green-800"
-        elif status_value == PaymentStatus.UNPAID.value:
+        elif effective_status == PaymentStatus.UNPAID.value:
             css_class = f"{base_badge_class} bg-yellow-100 text-yellow-800"
-        elif status_value == PaymentStatus.OVERDUE.value:
+        elif effective_status == PaymentStatus.OVERDUE.value:
             css_class = f"{base_badge_class} bg-red-100 text-red-800"
         else:
             css_class = f"{base_badge_class} bg-gray-100 text-gray-800"
 
-    else:  # style == 'default'
+    else:  # style == 'default' (dạng chữ lớn)
         base_default_class = "text-2xl font-bold"
-        if status_value == PaymentStatus.PAID.value:
+        if effective_status == PaymentStatus.PAID.value:
             css_class = f"{base_default_class} text-green-500"
-        elif status_value == PaymentStatus.UNPAID.value:
+        elif effective_status == PaymentStatus.UNPAID.value:
             css_class = f"{base_default_class} text-yellow-500"
-        elif status_value == PaymentStatus.OVERDUE.value:
+        elif effective_status == PaymentStatus.OVERDUE.value:
             css_class = f"{base_default_class} text-red-500"
         else:
             css_class = f"{base_default_class} text-gray-500"

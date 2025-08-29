@@ -96,6 +96,7 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% trans "Dùng để giả lập hành động của cư dân cho mục đích kiểm thử." %}</p>
                     <form action="{% url 'update_draft_bill_status' draft_bill.pk %}" method="post" class="mt-4 flex items-end space-x-4">
                         {% csrf_token %}
+                        <input type="hidden" name="month" value="{{ selected_month|default:'' }}">
                         <div>
                             <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Trạng thái mới" %}</label>
                             <select name="status" id="status" class="border rounded p-2 mt-1 dark:bg-gray-900 dark:border-gray-600">

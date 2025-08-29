@@ -60,6 +60,11 @@ urlpatterns = [
         name="billing_workspace",
     ),
     path(
+        "manager/billing/send-reminders/",
+        bills_view.send_payment_reminders_view,
+        name="send_payment_reminders",
+    ),
+    path(
         "manager/bill/utility_totals",
         bills_view.BuildingUtilityTotalView.as_view(),
         name="utility_totals",
@@ -190,6 +195,16 @@ urlpatterns = [
         "resident/bank_payment/transact_cancel/",
         bank_payment_views.payment_cancel,
         name="payment_cancel",
+    ),
+    path(
+        "resident/draft-bill/<int:pk>/resident-confirm/",
+        bill_history_views.confirm_draft_bill,
+        name="resident_confirm_draft_bill",
+    ),
+    path(
+        "resident/draft-bill/<int:pk>/resident-reject/",
+        bill_history_views.reject_draft_bill,
+        name="resident_reject_draft_bill",
     ),
     # RESIDENT room
     path(
