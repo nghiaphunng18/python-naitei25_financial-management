@@ -4,8 +4,9 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.utils.translation import gettext as _
 from django.contrib import messages
+from django.shortcuts import redirect
 
-from ..constants import DEFAULT_PAGE_SIZE, NotificationStatus
+from ..constants import DEFAULT_PAGE_SIZE, NotificationStatus, UserRole
 
 
 def filter_notifications(request, base_query):
@@ -112,3 +113,21 @@ def filter_notifications(request, base_query):
     context["query_params"] = query_params
 
     return context
+
+
+def get_notification_redirect(user):
+    """
+    Trả về redirect URL dựa trên vai trò của user.
+    Args:
+        user: User object chứa thông tin vai trò.
+    Returns:
+        redirect object tới URL lịch sử thông báo phù hợp hoặc dashboard.
+    """
+    role = user.role.role_name
+    if role == UserRole.RESIDENT.value:
+        return redirect("resident_notification_history")
+    elif role == UserRole.APARTMENT_MANAGER.value:
+        return redirect("manager_notification_history")
+    elif role == UserRole.ADMIN.value:
+        return redirect("admin_notification_history")
+    return redirect("dashboard")

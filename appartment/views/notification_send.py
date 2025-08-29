@@ -29,6 +29,8 @@ def resident_send_notification(request):
             )
             messages.success(request, _("Thông báo đã được gửi thành công."))
             return redirect("resident_notification_history")
+        else:
+            messages.error(request, _("Form không hợp lệ. Vui lòng kiểm tra lại."))
     else:
         form = NotificationForm(sender_role=UserRole.RESIDENT.value)
     return render(
