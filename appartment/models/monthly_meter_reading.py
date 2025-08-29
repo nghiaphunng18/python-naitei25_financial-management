@@ -16,7 +16,6 @@ class MonthlyMeterReading(models.Model):
     )
 
     class Meta:
-        pass
         db_table = "monthly_meter_readings"
 
     def __str__(self):
