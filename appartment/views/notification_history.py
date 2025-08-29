@@ -12,7 +12,7 @@ from django.core.paginator import Paginator
 from ..models import Notification
 from ..constants import NotificationStatus, UserRole
 from ..utils.permissions import role_required
-from ..utils.notification_utils import filter_notifications
+from ..utils.notification_utils import filter_notifications, get_notification_redirect
 
 """
 sender: ROLE_RESIDENT -> receiver: null (ROLE_ADMIN + ROLE_APARTMENT_MANAGER)
@@ -141,17 +141,21 @@ def mark_notification_read(request, notification_id):
     notification = get_object_or_404(Notification, pk=notification_id)
 
     # Kiểm tra quyền truy cập thông báo
+    is_admin_or_manager = request.user.role.role_name in [
+        UserRole.ADMIN.value,
+        UserRole.APARTMENT_MANAGER.value,
+    ]
     if not (
         (
             notification.receiver is None
             and notification.sender.role.role_name == UserRole.RESIDENT.value
+            and is_admin_or_manager
         )
-        or (notification.sender.role.role_name == UserRole.ADMIN.value)
         or (notification.receiver == request.user)
         or (notification.sender == request.user)
     ):
         messages.error(request, _("Bạn không có quyền xem thông báo này."))
-        return redirect("notification_history")
+        return get_notification_redirect(request.user)
 
     try:
         notification.status = NotificationStatus.READ.value
@@ -160,11 +164,4 @@ def mark_notification_read(request, notification_id):
     except Exception as e:
         messages.error(request, _("Có lỗi xảy ra khi đánh dấu thông báo: %s") % str(e))
 
-    role = request.user.role.role_name
-    if role == UserRole.RESIDENT.value:
-        return redirect("resident_notification_history")
-    elif role == UserRole.APARTMENT_MANAGER.value:
-        return redirect("manager_notification_history")
-    elif role == UserRole.ADMIN.value:
-        return redirect("admin_notification_history")
-    return redirect("dashboard")
+    return get_notification_redirect(request.user)
