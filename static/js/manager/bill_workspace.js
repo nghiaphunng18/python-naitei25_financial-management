@@ -53,17 +53,20 @@ function billingWorkspace() {
                     });
                 }
             },
+            
             // Hàm xử lý AJAX để thêm dịch vụ
             addService(event) {
                 console.log("addService function called.");
                 const form = event.target;
                 const formData = new FormData(form);
                 const csrfToken = window.APP_CONFIG.csrfToken;
+                
                 if (!formData.get('service')) {
                     alert('Vui lòng chọn một dịch vụ.');
                     return;
                 }
                 console.log("Form data to be sent:", Object.fromEntries(formData));
+                
                 fetch(window.APP_CONFIG.addAdhocServiceUrl, {
                     method: 'POST',
                     headers: { 'X-CSRFToken': csrfToken },

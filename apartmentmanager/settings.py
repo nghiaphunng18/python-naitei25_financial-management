@@ -111,9 +111,7 @@ WSGI_APPLICATION = "apartmentmanager.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get(
-            "DB_DATABASE"
-        ),  # Tên database đã tạo trong MySQL
+        "NAME": os.environ.get("DB_DATABASE"),  # Tên database đã tạo trong MySQL
         "USER": os.environ.get("DB_USERNAME"),  # Ví dụ: 'root'
         "PASSWORD": os.environ.get("DB_PASSWORD"),
         "HOST": os.environ.get(

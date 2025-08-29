@@ -18,6 +18,7 @@ from ...models import (
     Notification,
     User,
 )
+from ...constants import PaymentStatus, MONTH_YEAR_FORMAT
 
 
 @role_required(UserRole.RESIDENT.value)
@@ -96,8 +97,8 @@ def resident_bill_history(request):
 
     # Thống kê
     total_bills = len(bills_list)
-    paid_bills = sum(1 for b in bills_list if b.status == "paid")
-    unpaid_bills = sum(1 for b in bills_list if b.status == "unpaid")
+    paid_bills = sum(1 for b in bills_list if b.status == PaymentStatus.PAID.value)
+    unpaid_bills = sum(1 for b in bills_list if b.status == PaymentStatus.UNPAID.value)
 
     context = {
         "page_obj": page_obj,
@@ -123,7 +124,7 @@ def confirm_draft_bill(request, pk):
     messages.success(
         request,
         _(
-            f"Đã xác nhận thành công hóa đơn nháp tháng {draft_bill.bill_month.strftime('%m/%Y')}."
+            f"Đã xác nhận thành công hóa đơn nháp tháng {draft_bill.bill_month.strftime(MONTH_YEAR_FORMAT)}."
         ),
     )
     return redirect("bill_history")
@@ -143,7 +144,7 @@ def reject_draft_bill(request, pk):
     title = _(f"Cư dân từ chối HĐ nháp phòng {draft_bill.room.room_id}")
     message = (
         f"Cư dân {request.user.full_name} đã từ chối hóa đơn nháp "
-        f"({draft_bill.get_draft_type_display()}) cho tháng {draft_bill.bill_month.strftime('%m/%Y')}.\n\n"
+        f"({draft_bill.get_draft_type_display()}) cho tháng {draft_bill.bill_month.strftime(MONTH_YEAR_FORMAT)}.\n\n"
         f"Lý do: {rejection_reason}"
     )
 
